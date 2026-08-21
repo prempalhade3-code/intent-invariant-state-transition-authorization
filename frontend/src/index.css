@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #e9f3ff; background: #06101f; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; background: radial-gradient(circle at 15% 0%, #12305d 0, transparent 30rem), #06101f; }
+.grid-bg { background-image: linear-gradient(rgba(148,163,184,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.07) 1px, transparent 1px); background-size: 42px 42px; }
+.panel { border: 1px solid rgba(148,163,184,.16); background: linear-gradient(145deg, rgba(20,37,63,.82), rgba(8,19,35,.88)); box-shadow: 0 20px 60px rgba(0,0,0,.24); }
