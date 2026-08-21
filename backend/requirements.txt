@@ -1,0 +1,7 @@
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+cryptography>=43,<46
+langgraph>=0.2,<1.0
+openai>=1.0,<2.0
+httpx>=0.27,<1.0
+pytest>=8,<9
