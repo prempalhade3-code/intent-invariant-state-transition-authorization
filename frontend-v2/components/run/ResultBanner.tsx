@@ -29,7 +29,7 @@ export function ResultBanner({ view, onReset, className }: ResultBannerProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "rounded-2xl border p-6 space-y-4",
+        "rounded-[20px] border p-7 space-y-5",
         granted
           ? "bg-success-light border-authorized-border"
           : "bg-danger-light border-blocked-border",
@@ -56,12 +56,12 @@ export function ResultBanner({ view, onReset, className }: ResultBannerProps) {
 
           <div>
             <h2 className={cn("text-xl font-bold", granted ? "text-success" : "text-danger")}>
-              {granted ? "Transaction authorized" : "Transaction blocked"}
+              {granted ? "Authority confirmed." : "Authority withheld."}
             </h2>
             <p className={cn("text-sm mt-1 leading-relaxed max-w-lg", granted ? "text-success/80" : "text-danger/80")}>
               {granted
-                ? `The agent selected VPS Basic${amount != null ? ` · $${amount}` : ""}. The execution path matched the sealed policy. IISTA verified all checks and signed the transaction.`
-                : view.blockReason ?? "IISTA refused to sign the transaction."}
+                ? `The execution matched the sealed policy${amount != null ? ` · $${amount}` : ""}. SWORN verified the path and signed the transaction.`
+                : view.blockReason ?? "SWORN refused to sign the transaction."}
             </p>
           </div>
         </div>
@@ -80,7 +80,7 @@ export function ResultBanner({ view, onReset, className }: ResultBannerProps) {
           {[
             { label: "Agent attempted", value: view.selectedProduct ?? "—", danger: false },
             { label: "Invoice amount", value: amount != null ? `$${amount}` : "—", danger: true },
-            { label: "Authorized limit", value: budget != null ? `$${budget}` : "—", danger: false },
+              { label: "Sealed limit", value: budget != null ? `$${budget}` : "—", danger: false },
             { label: "Payment", value: "$0", danger: true },
           ].map((stat) => (
             <div

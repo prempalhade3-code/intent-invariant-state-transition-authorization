@@ -34,7 +34,7 @@ export function OrderView({ order, className }: OrderViewProps) {
         <div className="text-center">
           <h3 className="text-base font-semibold text-ink">Order confirmed</h3>
           <p className="text-xs text-ink-muted mt-0.5">
-            Simulated payment settled via IISTA
+            Simulated payment settled via SWORN
           </p>
         </div>
         <Badge variant="success" size="md" dot>

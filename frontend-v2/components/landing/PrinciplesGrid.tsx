@@ -10,7 +10,7 @@ const PRINCIPLES = [
   {
     number: "02",
     title: "The agent navigates freely",
-    body: "Search, inspect, add to cart, create checkout, read invoice. IISTA observes every action but never controls the agent's decisions. The agent operates with real autonomy inside a real commerce environment.",
+    body: "Search, inspect, add to cart, create checkout, read invoice. SWORN observes every action but never controls the agent's decisions. The agent operates with real autonomy inside a real commerce environment.",
   },
   {
     number: "03",

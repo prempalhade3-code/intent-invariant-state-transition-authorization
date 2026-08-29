@@ -38,7 +38,7 @@ export function BlockedView({
         <div className="text-center">
           <h3 className="text-base font-semibold text-ink">Transaction blocked</h3>
           <p className="text-xs text-ink-muted mt-0.5">
-            IISTA stopped this before payment
+            SWORN stopped this before payment
           </p>
         </div>
       </div>
@@ -71,7 +71,7 @@ export function BlockedView({
               </div>
             )}
             <div className="flex justify-between items-center px-4 py-2.5">
-              <span className="text-xs text-ink-faint">IISTA decision</span>
+              <span className="text-xs text-ink-faint">SWORN decision</span>
               <span className="text-sm font-bold text-danger">BLOCKED</span>
             </div>
             <div className="flex justify-between items-center px-4 py-2.5">

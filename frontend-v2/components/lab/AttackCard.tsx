@@ -37,7 +37,7 @@ export function AttackCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: index * 0.07 }}
       className={cn(
-        "card p-5 flex flex-col gap-4 transition-all duration-200",
+        "bg-paper p-6 flex flex-col gap-5 transition-all duration-300 hover:bg-surface",
         active && "border-accent bg-accent-light",
         result === "blocked" && "border-blocked-border bg-danger-light",
         result === "authorized" && "border-authorized-border bg-success-light",
@@ -58,8 +58,8 @@ export function AttackCard({
             <Icon className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-ink">{attack.title}</h3>
-            <p className="text-xs text-ink-faint">{attack.subtitle}</p>
+            <h3 className="text-base font-semibold tracking-[-.035em] text-ink">{attack.title}</h3>
+            <p className="mt-0.5 text-xs text-ink-faint">{attack.subtitle}</p>
           </div>
         </div>
 
@@ -75,27 +75,17 @@ export function AttackCard({
       </div>
 
       {/* What breaks */}
-      <div className="space-y-1">
-        <p className="text-2xs font-semibold text-ink-faint uppercase tracking-wider">
-          What this tests
-        </p>
-        <p className="text-xs text-ink-muted leading-relaxed">{attack.whatBreaks}</p>
-      </div>
+      <p className="min-h-[64px] text-[13px] leading-relaxed text-ink-muted">{attack.whatBreaks}</p>
 
       {/* Narrative */}
-      <div className="space-y-1 p-3 bg-surface rounded-lg border border-border">
-        <p className="text-2xs font-semibold text-ink-faint uppercase tracking-wider">
-          Under the hood
-        </p>
-        <p className="text-xs text-ink-faint leading-relaxed">{attack.narrative}</p>
-      </div>
+      <p className="border-l border-border pl-3 text-[11px] leading-relaxed text-ink-faint">{attack.narrative}</p>
 
       {/* CTA */}
       <button
         onClick={() => !disabled && onRun(attack)}
         disabled={!!disabled}
         className={cn(
-          "w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold",
+          "mt-auto w-full flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-medium",
           "transition-all duration-150 active:scale-[0.98]",
           active
             ? "bg-accent text-paper"

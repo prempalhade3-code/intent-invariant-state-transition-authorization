@@ -35,7 +35,7 @@ export function AuthorizationMoment({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <p className="section-label">IISTA decision</p>
+      <p className="section-label">SWORN decision</p>
 
       <AnimatePresence mode="wait">
         {waiting && (

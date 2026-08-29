@@ -71,7 +71,7 @@ export function CheckoutView({ checkout, className }: CheckoutViewProps) {
         <div className="flex items-center gap-2.5 p-3 bg-accent-light border border-accent/20 rounded-xl">
           <Shield className="w-4 h-4 text-accent flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-xs text-accent-muted">IISTA verification pending</p>
+            <p className="text-xs text-accent-muted">SWORN verification pending</p>
             <p className="text-2xs text-accent/70 mt-0.5">
               Invoice ID: {checkout.invoice_id}
             </p>

@@ -199,7 +199,7 @@ function buildAgentSteps(events: RunEvent[], authorized: boolean | null, blocked
   } else if (blocked) {
     const step = steps.find((s) => s.id === "payment")!;
     step.status = "blocked";
-    step.detail = "blocked by IISTA";
+    step.detail = "blocked by SWORN";
   }
 
   // Mark active step (first pending after last done)

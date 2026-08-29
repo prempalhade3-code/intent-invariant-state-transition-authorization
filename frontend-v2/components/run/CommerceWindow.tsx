@@ -92,10 +92,10 @@ export function CommerceWindow({
   const attemptedAmount = checkout?.price ?? invoice?.price ?? null;
 
   return (
-    <div className={cn("flex flex-col rounded-2xl border border-border bg-paper overflow-hidden shadow-md", className)}>
+    <div className={cn("flex flex-col rounded-[20px] border border-border bg-paper overflow-hidden shadow-sm", className)}>
       {/* Browser chrome */}
       <div className="flex items-center gap-2 px-4 py-2.5 bg-surface border-b border-border flex-shrink-0">
-        {/* Window dots */}
+        {/* Browser frame. It reflects actual backend-derived commerce state. */}
         <div className="flex gap-1.5">
           <div className="w-3 h-3 rounded-full bg-border-strong" />
           <div className="w-3 h-3 rounded-full bg-border-strong" />
@@ -109,7 +109,7 @@ export function CommerceWindow({
             key={url}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-xs font-mono text-ink-muted flex-1 truncate"
+          className="text-[10px] font-mono text-ink-muted flex-1 truncate"
           >
             {url}
           </motion.span>
@@ -153,7 +153,7 @@ export function CommerceWindow({
             animate={{ opacity: 1 }}
             className="text-xs text-accent font-medium"
           >
-            Agent: {agentAction}
+            Agent is {agentAction.toLowerCase()}
           </motion.span>
         )}
       </div>

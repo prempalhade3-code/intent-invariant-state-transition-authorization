@@ -110,8 +110,8 @@ export function eventNarrative(event: RunEvent): string {
 
     case "authorization_blocked":
       return typeof p.reason === "string"
-        ? `IISTA blocked — ${p.reason}`
-        : "Transaction blocked by IISTA";
+        ? `SWORN blocked — ${p.reason}`
+        : "Transaction blocked by SWORN";
 
     case "payment_submitted":
       return "Payment submitted to merchant";

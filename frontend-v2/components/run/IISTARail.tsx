@@ -26,7 +26,7 @@ export function IISTARail({ view, phase, className }: IISTARailProps) {
       <div className="flex items-center justify-between flex-shrink-0">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-ink">IISTA Enclave</span>
+            <span className="text-sm font-bold text-ink">SWORN enclave</span>
             {phase === "live" && !blocked && !granted && (
               <PulseRing active size="sm" variant="accent" />
             )}

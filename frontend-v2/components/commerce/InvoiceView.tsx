@@ -87,7 +87,7 @@ export function InvoiceView({ invoice, className }: InvoiceViewProps) {
       </div>
 
       <p className="text-center text-xs text-ink-faint">
-        IISTA is verifying this invoice against the sealed policy
+        SWORN is verifying this invoice against the sealed policy
       </p>
     </motion.div>
   );

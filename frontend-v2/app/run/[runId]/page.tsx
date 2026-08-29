@@ -8,7 +8,6 @@ import { IISTARail } from "@/components/run/IISTARail";
 import { LiveEventFeed } from "@/components/run/LiveEventFeed";
 import { ResultBanner } from "@/components/run/ResultBanner";
 import { useLiveRun } from "@/hooks/useLiveRun";
-import { cn } from "@/lib/cn";
 
 interface PageProps {
   params: { runId: string };
@@ -41,24 +40,25 @@ export default function RunPage({ params }: PageProps) {
         onReset={handleReset}
       />
 
-      {/* Intent banner */}
+      {/* The sealed request remains visible, the technical proof stays secondary. */}
       {view.prompt && (
-        <div className="border-b border-border bg-paper px-6 py-3 flex items-center justify-between gap-4">
+        <div className="border-b border-border bg-paper px-5 py-3 md:px-8">
+          <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <span className="text-2xs font-semibold text-ink-faint uppercase tracking-wider whitespace-nowrap flex-shrink-0">
-              Authorization request
+            <span className="text-[10px] font-mono font-medium text-ink-faint uppercase tracking-[.14em] whitespace-nowrap flex-shrink-0">
+              Sealed intent
             </span>
-            <span className="text-sm text-ink truncate">{view.prompt}</span>
+            <span className="text-sm font-medium text-ink truncate">{view.prompt}</span>
           </div>
           {view.policy?.budget_max != null && (
             <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="text-2xs text-ink-faint">Budget</span>
+              <span className="text-[10px] font-mono uppercase tracking-[.1em] text-ink-faint">Limit</span>
               <span className="text-sm font-bold text-ink">
                 ${view.policy.budget_max}
               </span>
             </div>
           )}
-        </div>
+          </div></div>
       )}
 
       {/* Error */}
@@ -75,32 +75,14 @@ export default function RunPage({ params }: PageProps) {
         )}
       </AnimatePresence>
 
-      {/* Main layout — three columns */}
-      <div className="flex-1 flex overflow-hidden">
-        {/*
-          Left panel: Agent timeline + event feed
-          Center: Commerce window (the main visual story)
-          Right: IISTA rail
-        */}
-        <div className="flex flex-1 gap-0 min-h-0">
-          {/* LEFT — Agent timeline + event feed */}
-          <aside className="w-64 xl:w-72 flex-shrink-0 border-r border-border flex flex-col bg-paper overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-4 scroll-thin space-y-6">
-              <AgentTimeline steps={view.agentSteps} />
-
-              <div className="border-t border-border" />
-
-              <div>
-                <p className="section-label">Live events</p>
-                <LiveEventFeed events={view.events} maxItems={16} />
-              </div>
-            </div>
-          </aside>
-
-          {/* CENTER — Commerce window + result banner */}
-          <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-            <div className="flex-1 p-5 space-y-4">
-              {/* Result banner — appears on settle */}
+      <main className="flex-1 px-5 py-8 md:px-8">
+        <div className="mx-auto max-w-[1280px] space-y-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div><p className="text-[10px] font-mono uppercase tracking-[.14em] text-ink-faint">Protected execution</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.055em] text-ink">The transaction, as it happens.</h1></div>
+            <p className="max-w-sm text-sm leading-relaxed text-ink-muted">The agent can act through the marketplace. SWORN stays outside that loop and decides what is allowed to settle.</p>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_310px]">
+            <section className="min-w-0 space-y-5">
               <AnimatePresence>
                 {settled && (granted || blocked) && (
                   <ResultBanner
@@ -110,7 +92,6 @@ export default function RunPage({ params }: PageProps) {
                 )}
               </AnimatePresence>
 
-              {/* Commerce window — always present */}
               <CommerceWindow
                 view={view.commerceView}
                 selectedProductId={view.selectedProduct}
@@ -121,19 +102,20 @@ export default function RunPage({ params }: PageProps) {
                 blockReason={view.blockReason}
                 authorizedBudget={view.policy?.budget_max ?? view.policy?.budget ?? null}
                 agentAction={agentAction}
-                className="h-[520px] xl:h-[580px]"
+                className="h-[560px] xl:h-[620px]"
               />
-            </div>
-          </main>
-
-          {/* RIGHT — IISTA rail */}
-          <aside className="w-72 xl:w-80 flex-shrink-0 border-l border-border bg-paper overflow-hidden">
-            <div className="h-full p-4">
-              <IISTARail view={view} phase={phase} />
-            </div>
-          </aside>
+              <div className="rounded-[18px] border border-border bg-paper p-5"><AgentTimeline steps={view.agentSteps} /></div>
+            </section>
+            <aside className="space-y-5 lg:sticky lg:top-24 lg:h-fit">
+              <div className="rounded-[18px] border border-border bg-paper p-5"><IISTARail view={view} phase={phase} /></div>
+              <details className="group rounded-[18px] border border-border bg-paper p-5">
+                <summary className="cursor-pointer list-none text-sm font-medium text-ink">Execution evidence <span className="float-right font-mono text-[10px] text-ink-faint group-open:hidden">OPEN</span></summary>
+                <div className="mt-4 border-t border-border pt-3"><LiveEventFeed events={view.events} maxItems={16} /></div>
+              </details>
+            </aside>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

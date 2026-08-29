@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AttackCard } from "./AttackCard";
 import { IISTARail } from "@/components/run/IISTARail";
@@ -18,12 +18,14 @@ interface LabGridProps {
 
 export function LabGrid({ onAutonomous, onScenario, activeId, phase, view }: LabGridProps) {
   const [lastResults, setLastResults] = useState<Record<string, "authorized" | "blocked">>({});
+  const resultRef = useRef<HTMLDivElement>(null);
 
   // Record result when a run settles
   useEffect(() => {
     if (phase === "settled" && activeId && view) {
       const result = view.authorized === true ? "authorized" : "blocked";
       setLastResults((prev) => ({ ...prev, [activeId]: result }));
+      requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
     }
   }, [phase, activeId, view?.authorized]);
 
@@ -39,15 +41,18 @@ export function LabGrid({ onAutonomous, onScenario, activeId, phase, view }: Lab
   const busy = phase === "submitting" || phase === "live";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Result banner */}
       <AnimatePresence>
         {phase === "settled" && view && (
-          <ResultBanner view={view} />
+          <motion.div ref={resultRef} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="scroll-mt-24">
+            <p className="mb-3 text-[10px] font-mono uppercase tracking-[.15em] text-ink-faint">Decision</p>
+            <ResultBanner view={view} />
+          </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-px overflow-hidden rounded-[20px] border border-border bg-border md:grid-cols-2 xl:grid-cols-3">
         {ATTACKS.map((attack, i) => (
           <AttackCard
             key={attack.id}
@@ -72,7 +77,7 @@ export function LabGrid({ onAutonomous, onScenario, activeId, phase, view }: Lab
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="card p-5 max-w-sm"
+            className="card max-w-sm p-5"
           >
             <IISTARail view={view} phase={phase ?? "idle"} />
           </motion.div>

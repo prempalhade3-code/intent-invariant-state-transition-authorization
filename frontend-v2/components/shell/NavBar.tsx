@@ -20,28 +20,23 @@ export function NavBar({ phase, runId, blocked, onReset, className }: NavBarProp
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 h-14 border-b border-border bg-paper/90 backdrop-blur-md",
-        "flex items-center justify-between px-6",
+        "sticky top-0 z-40 border-b border-border bg-surface/90 backdrop-blur-xl",
+        "flex h-[74px] items-center justify-between px-5 md:px-8",
         className,
       )}
     >
       {/* Brand */}
-      <Link href="/" className="flex items-center gap-3 no-underline group">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-accent flex items-center justify-center">
-            <span className="text-paper font-bold text-xs tracking-tight">I</span>
-          </div>
-          <span className="font-semibold text-base text-ink tracking-tight">IISTA</span>
+      <Link href="/" className="flex items-center gap-3 no-underline group" aria-label="SWORN home">
+        <div className="sworn-mark">S</div>
+        <div className="leading-none">
+          <span className="block text-[17px] font-semibold tracking-[-0.06em] text-ink">SWORN</span>
+          <span className="mt-1 hidden text-[10px] font-mono uppercase tracking-[0.12em] text-ink-faint sm:block">authorization layer</span>
         </div>
-        <span className="text-border-strong">·</span>
-        <span className="text-sm text-ink-muted font-normal hidden sm:block">
-          Authorization for autonomous payments
-        </span>
       </Link>
 
       {/* Center — run context */}
       {runId && (
-        <div className="hidden md:flex items-center gap-2 font-mono text-xs text-ink-faint bg-surface border border-border px-3 py-1 rounded-full">
+        <div className="hidden md:flex items-center gap-2 font-mono text-[10px] text-ink-faint border border-border px-3 py-1.5 rounded-full">
           <span className="w-1.5 h-1.5 rounded-full bg-border-strong" />
           {runId}
         </div>
@@ -53,7 +48,7 @@ export function NavBar({ phase, runId, blocked, onReset, className }: NavBarProp
         {phase && phase !== "idle" && (
           <div
             className={cn(
-              "flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full border",
+              "flex items-center gap-2 text-[11px] font-medium px-3 py-1.5 rounded-full border",
               isLive && !blocked
                 ? "bg-accent-light border-accent/20 text-accent"
                 : isSettled && !blocked
