@@ -1,7 +1,14 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import path from "node:path";
 
 export default defineConfig({
   plugins: [react()],
-  server: { port: 5173, proxy: { "/api": { target: "http://127.0.0.1:8001", changeOrigin: true, rewrite: (path) => path.replace(/^\/api/, "") } } },
+  resolve: { alias: { "framer-motion": path.resolve(__dirname, "src/lib/framer-motion.tsx") } },
+  server: {
+    port: 5173,
+    proxy: {
+      "/api": { target: "http://127.0.0.1:8003", changeOrigin: true },
+    },
+  },
 });
