@@ -11,9 +11,9 @@ const config: Config = {
     extend: {
       colors: {
         ink: {
-          DEFAULT: "#141414",
+          DEFAULT: "#0A0A0A",
           muted: "#6B6B6B",
-          faint: "#A8A8A3",
+          faint: "#A3A3A0",
         },
         surface: "#F8F7F5",
         paper: "#FFFFFF",
@@ -22,9 +22,9 @@ const config: Config = {
           strong: "#C8C5BF",
         },
         accent: {
-          DEFAULT: "#0B6557",
+          DEFAULT: "#0F766E",
           light: "#EEF7F5",
-          dark: "#084D41",
+          dark: "#0B6F63",
           muted: "#3D8C80",
         },
         danger: {
@@ -56,9 +56,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        display: ["var(--font-playfair)", "Georgia", "serif"],
-        mono: ["var(--font-jetbrains)", "ui-monospace", "monospace"],
+        sans: ["var(--font-space)", "system-ui", "sans-serif"],
+        display: ["var(--font-space)", "system-ui", "sans-serif"],
+        mono: ["var(--font-plex)", "ui-monospace", "monospace"],
       },
       fontSize: {
         "2xs": ["10px", { lineHeight: "14px", letterSpacing: "0.06em" }],

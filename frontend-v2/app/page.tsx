@@ -1,28 +1,34 @@
 "use client";
+
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { NavBar } from "@/components/shell/NavBar";
+import { AnimatedHeadline } from "@/components/landing/AnimatedHeadline";
 import { IntentComposer } from "@/components/landing/IntentComposer";
-import { PrinciplesGrid } from "@/components/landing/PrinciplesGrid";
-import { LabStrip } from "@/components/landing/LabStrip";
 import { createRun } from "@/lib/api";
 import type { Phase } from "@/lib/types";
+
+const reveal = { duration: 0.52, ease: [0.22, 1, 0.36, 1] as const };
+
+const QUICK_PROMPTS = [
+  "VPS under $25",
+  "approved marketplace",
+  "sealed on send",
+];
 
 export default function LandingPage() {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [activeAttack, setActiveAttack] = useState<string | null>(null);
-
   const busy = phase === "submitting";
 
-  const handleAutonomous = async (prompt: string, demoEvent?: string, id?: string) => {
+  const handleAutonomous = async (prompt: string) => {
     setError(null);
-    setActiveAttack(id ?? null);
     setPhase("submitting");
     try {
-      const res = await createRun(prompt, demoEvent);
+      const res = await createRun(prompt);
       router.push(`/run/${res.run_id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not start run");
@@ -30,70 +36,85 @@ export default function LandingPage() {
     }
   };
 
-  const handleScenario = async (_scenario: string, id: string) => {
-    setActiveAttack(id);
-    router.push("/lab");
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-surface">
+    <div className="flex min-h-screen flex-col bg-paper">
       <NavBar phase={phase} />
 
-      <main className="flex-1 px-5 pb-16 pt-16 md:px-8 md:pt-24">
-        {/* Hero */}
-        <div className="mx-auto w-full max-w-[1180px]">
-          <section className="grid items-end gap-12 border-b border-border pb-14 lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-20">
-            <div className="max-w-3xl space-y-7">
-              <motion.div
-                className="flex items-center gap-2 text-[10px] font-mono font-medium text-ink-faint tracking-[0.16em] uppercase"
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <span className="w-4 h-px bg-border-strong" />
-                Authorization infrastructure for autonomous agents
-              </motion.div>
-              <motion.h1
-                className="max-w-[760px] text-[58px] font-semibold leading-[0.92] tracking-[-0.075em] text-ink md:text-[78px] lg:text-[92px]"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-              >
-                Sworn to <span className="text-accent">execute.</span>
-              </motion.h1>
-              <motion.p
-                className="max-w-[590px] text-[17px] text-ink-muted leading-[1.65]"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
-              >
-                An agent can search, choose and checkout. SWORN signs only the transaction that still matches the authority it was given.
-              </motion.p>
-            </div>
-            <div className="lg:pb-1"><IntentComposer onSubmit={(prompt) => handleAutonomous(prompt)} loading={busy} error={error} /></div>
-          </section>
+      <main className="flex-1 px-5 pb-20 pt-[108px] sm:px-8 md:pt-[120px]">
+        <section className="mx-auto flex w-full max-w-[680px] flex-col items-center text-center">
+          <motion.p
+            className="mb-5 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink-faint"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={reveal}
+          >
+            Authorization infrastructure
+          </motion.p>
 
-          <section className="grid gap-10 py-14 lg:grid-cols-[260px_1fr] lg:gap-16">
-            <div><p className="text-[10px] font-mono uppercase tracking-[0.16em] text-ink-faint">One authority. Two roles.</p><h2 className="mt-4 text-2xl font-semibold tracking-[-0.045em]">The agent proposes.<br />SWORN permits.</h2></div>
-            <PrinciplesGrid />
-          </section>
-          <section className="border-t border-border pt-10">
-            <div className="mb-5 flex items-end justify-between"><div><p className="text-[10px] font-mono uppercase tracking-[0.16em] text-ink-faint">Incident lab</p><h2 className="mt-2 text-2xl font-semibold tracking-[-0.045em]">Break the assumptions.</h2></div><button onClick={() => router.push("/lab")} className="hidden text-sm text-ink-muted underline underline-offset-4 sm:block">View all scenarios</button></div>
-            <LabStrip onAutonomous={(prompt, demoEvent, id) => handleAutonomous(prompt, demoEvent, id)} onScenario={handleScenario} disabled={busy} activeId={activeAttack} />
-          </section>
-        </div>
+          <motion.div
+            className="mb-9 w-full"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...reveal, delay: 0.06 }}
+          >
+            <AnimatedHeadline />
+          </motion.div>
+
+          <div className="w-full">
+            <IntentComposer
+              onSubmit={(prompt) => handleAutonomous(prompt)}
+              loading={busy}
+              error={error}
+            />
+          </div>
+
+          <motion.div
+            className="mt-5 flex flex-wrap justify-center gap-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.45, delay: 0.28 }}
+          >
+            {QUICK_PROMPTS.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-border px-3 py-1.5 font-mono text-[10px] tracking-wide text-ink-faint"
+              >
+                {tag}
+              </span>
+            ))}
+          </motion.div>
+        </section>
+
+        <motion.section
+          className="mx-auto mt-28 w-full max-w-[680px]"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...reveal, delay: 0.35 }}
+        >
+          <Link
+            href="/lab"
+            className="group flex items-center justify-between py-4 transition-colors hover:text-accent"
+          >
+            <div className="text-left">
+              <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+                Incident Lab
+              </p>
+              <p className="text-[15px] font-medium tracking-[-0.02em] text-ink transition-colors group-hover:text-accent">
+                Six hostile conditions, one invariant
+              </p>
+            </div>
+            <span
+              aria-hidden
+              className="text-[15px] text-ink-faint transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-accent"
+            >
+              →
+            </span>
+          </Link>
+        </motion.section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border px-6 py-5 flex flex-wrap items-center justify-between gap-4 text-xs text-ink-faint">
-        <span>SWORN · Intent-Invariant State Transition Authorization</span>
-        <span className="flex items-center gap-4">
-          <span>Cryptographic policy</span>
-          <span className="text-border-strong">·</span>
-          <span>Independent DAE enclave</span>
-          <span className="text-border-strong">·</span>
-          <span>No real money</span>
-        </span>
+      <footer className="px-6 py-8 text-center font-mono text-[10px] tracking-wide text-ink-faint">
+        Sworn
       </footer>
     </div>
   );

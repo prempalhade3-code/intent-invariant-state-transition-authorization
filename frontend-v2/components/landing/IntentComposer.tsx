@@ -1,7 +1,8 @@
 "use client";
+
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowUpRight, Loader2, Lock } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { DEFAULT_PROMPT } from "@/lib/api";
 
@@ -12,11 +13,6 @@ interface IntentComposerProps {
   className?: string;
 }
 
-const EXAMPLE_PROMPTS = [
-  "Find me a basic VPS under $25 and purchase it from the approved marketplace.",
-  "Get me the cheapest VPS available from the approved vendor, budget $30.",
-];
-
 export function IntentComposer({
   onSubmit,
   loading,
@@ -25,6 +21,7 @@ export function IntentComposer({
 }: IntentComposerProps) {
   const [value, setValue] = useState(DEFAULT_PROMPT);
   const [focused, setFocused] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -38,34 +35,30 @@ export function IntentComposer({
 
   return (
     <motion.div
-      className={cn("w-full max-w-2xl", className)}
-      initial={{ opacity: 0, y: 16 }}
+      className={cn("w-full mx-auto", className)}
+      initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+      transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
     >
-      <form onSubmit={handleSubmit}>
-        <div
+      <form onSubmit={handleSubmit} className="relative">
+        <motion.div
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          animate={{
+            borderColor: focused ? "#C8C5BF" : hovered ? "#E2E0DC" : "#E8E8E6",
+            boxShadow: focused
+              ? "0 2px 12px rgba(10,10,10,0.06)"
+              : hovered
+                ? "0 1px 6px rgba(10,10,10,0.04)"
+                : "0 0 0 rgba(10,10,10,0)",
+          }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
           className={cn(
-            "relative bg-paper border rounded-[22px] transition-all duration-300",
-            focused
-              ? "border-accent/50 shadow-accent shadow-lg"
-              : "border-border shadow-md",
+            "relative overflow-hidden rounded-[20px] border bg-paper",
             loading && "opacity-80",
           )}
         >
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-border">
-            <span className="text-[10px] font-mono font-medium text-ink-faint tracking-[0.14em] uppercase">
-              New authorization
-            </span>
-            <div className="flex items-center gap-1.5 text-xs text-ink-faint">
-              <Lock className="w-3 h-3" />
-              <span>Policy becomes immutable on submit</span>
-            </div>
-          </div>
-
-          {/* Textarea */}
-          <div className="px-6 py-5">
+          <div className="px-5 py-4 pb-[56px] sm:px-6 sm:py-5">
             <textarea
               ref={textareaRef}
               value={value}
@@ -73,75 +66,55 @@ export function IntentComposer({
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
                   handleSubmit(e);
                 }
               }}
-              placeholder="Describe your financial intent in plain language…"
+              placeholder="Find me a basic VPS under $25..."
               spellCheck={false}
               disabled={loading}
               className={cn(
                 "w-full resize-none bg-transparent outline-none",
-                "text-[18px] font-medium text-ink leading-[1.55] tracking-[-0.025em]",
+                "text-[15px] sm:text-[16px] text-ink leading-[1.5] tracking-[-0.02em]",
                 "placeholder:text-ink-faint",
-                "min-h-[80px] max-h-[180px]",
+                "min-h-[52px]",
                 "disabled:opacity-60",
               )}
-              rows={3}
+              rows={2}
             />
           </div>
 
-          {/* Footer */}
-          <div className="flex items-center justify-between gap-4 px-6 py-4 border-t border-border">
-            <p className="text-xs text-ink-faint leading-relaxed">
-              Budget, merchant and capabilities are sealed before the agent touches the marketplace.
-            </p>
-
+          <div className="absolute bottom-2.5 inset-x-2.5 flex items-center justify-end">
             <button
               type="submit"
               disabled={!canSubmit}
               className={cn(
-                "flex shrink-0 items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-full",
-                "transition-all duration-200 active:scale-[0.97]",
+                "flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium",
+                "transition-all duration-200",
                 canSubmit
-                  ? "bg-ink text-paper hover:bg-ink/90 shadow-sm"
-                  : "bg-surface text-ink-faint border border-border cursor-not-allowed",
+                  ? "bg-ink text-paper hover:bg-ink/90 active:scale-[0.97]"
+                  : "bg-surface text-ink-faint cursor-not-allowed",
               )}
             >
-              {loading ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Starting…
-                </>
-              ) : (
-                <>
-                  Run protected transaction
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </>
-              )}
+              {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Send"}
             </button>
           </div>
-        </div>
+        </motion.div>
       </form>
 
-      {/* Error */}
       <AnimatePresence>
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="mt-3 px-4 py-3 bg-danger-light border border-blocked-border rounded-xl text-sm text-danger"
+            className="mt-3 rounded-xl border border-blocked-border bg-danger-light px-4 py-3 text-center text-sm text-danger"
           >
             {error}
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Hint */}
-      <p className="mt-3 text-center text-xs text-ink-faint">
-        ⌘ + Enter to execute
-      </p>
     </motion.div>
   );
 }
