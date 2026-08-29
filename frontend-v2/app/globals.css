@@ -1,0 +1,275 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Font variables (set by layout.tsx via next/font) ─── */
+:root {
+  --font-inter: "Inter", system-ui, sans-serif;
+  --font-playfair: "Playfair Display", Georgia, serif;
+  --font-jetbrains: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* ─── Base reset ─── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-surface text-ink font-sans;
+  min-height: 100vh;
+}
+
+/* ─── Typography baseline ─── */
+h1, h2, h3, h4, h5, h6 {
+  @apply font-sans font-semibold text-ink;
+  letter-spacing: -0.02em;
+}
+
+p {
+  @apply text-base leading-relaxed text-ink-muted;
+}
+
+a {
+  @apply text-ink transition-colors duration-150;
+}
+
+/* ─── Selection ─── */
+::selection {
+  background-color: rgba(11, 101, 87, 0.15);
+  color: #141414;
+}
+
+/* ─── Focus visible ─── */
+:focus-visible {
+  @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-surface;
+  border-radius: 6px;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-border-strong;
+}
+
+/* ─── Component layer ─── */
+@layer components {
+  /* Panel card */
+  .card {
+    @apply bg-paper border border-border rounded-xl;
+  }
+
+  .card-elevated {
+    @apply bg-paper border border-border rounded-xl shadow-md;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 bg-ink text-paper font-medium text-sm
+           px-4 py-2.5 rounded-md transition-all duration-150
+           hover:bg-ink/90 active:scale-[0.98]
+           focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 bg-surface text-ink font-medium text-sm
+           px-4 py-2.5 rounded-md border border-border transition-all duration-150
+           hover:bg-paper hover:border-border-strong active:scale-[0.98];
+  }
+
+  .btn-accent {
+    @apply inline-flex items-center gap-2 bg-accent text-paper font-medium text-sm
+           px-4 py-2.5 rounded-md transition-all duration-150
+           hover:bg-accent-dark active:scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 text-ink-muted font-medium text-sm
+           px-3 py-2 rounded-md transition-all duration-150
+           hover:bg-paper hover:text-ink;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center gap-2 bg-danger text-paper font-medium text-sm
+           px-4 py-2.5 rounded-md transition-all duration-150
+           hover:bg-danger-dark active:scale-[0.98];
+  }
+
+  /* Label/caption */
+  .label {
+    @apply text-2xs font-semibold tracking-widest uppercase text-ink-faint;
+  }
+
+  /* Mono chip */
+  .hash-chip {
+    @apply font-mono text-2xs text-ink-faint bg-surface border border-border
+           px-2 py-0.5 rounded-sm;
+  }
+
+  /* Status dot */
+  .status-live {
+    @apply w-1.5 h-1.5 rounded-full bg-accent animate-pulse-dot;
+  }
+
+  .status-idle {
+    @apply w-1.5 h-1.5 rounded-full bg-border-strong;
+  }
+
+  .status-success {
+    @apply w-1.5 h-1.5 rounded-full bg-success;
+  }
+
+  .status-danger {
+    @apply w-1.5 h-1.5 rounded-full bg-danger;
+  }
+
+  /* Verification check row */
+  .check-row {
+    @apply flex items-start gap-3 py-2.5 border-b border-border last:border-0;
+  }
+
+  /* Commerce card */
+  .product-card {
+    @apply card p-4 cursor-pointer transition-all duration-200
+           hover:border-border-strong hover:shadow-sm;
+  }
+
+  .product-card[data-selected="true"] {
+    @apply border-accent bg-accent-light shadow-accent;
+  }
+
+  /* Skeleton shimmer */
+  .skeleton {
+    @apply rounded bg-border;
+    background-image: linear-gradient(
+      90deg,
+      #e2e0dc 0%,
+      #eeecE8 40%,
+      #e2e0dc 80%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s linear infinite;
+  }
+
+  /* Section heading */
+  .section-label {
+    @apply text-2xs font-semibold tracking-widest uppercase text-ink-faint
+           pb-3 border-b border-border mb-4;
+  }
+
+  /* Timeline step */
+  .timeline-step {
+    @apply flex items-start gap-3 py-2;
+  }
+
+  .timeline-step[data-status="done"] .step-icon {
+    @apply text-success bg-success-light;
+  }
+
+  .timeline-step[data-status="active"] .step-icon {
+    @apply text-accent bg-accent-light;
+  }
+
+  .timeline-step[data-status="blocked"] .step-icon {
+    @apply text-danger bg-danger-light;
+  }
+
+  .timeline-step[data-status="pending"] .step-icon {
+    @apply text-ink-faint bg-surface;
+  }
+
+  /* Event row */
+  .event-row {
+    @apply flex items-start gap-3 py-1.5 text-sm;
+  }
+
+  /* Commerce address bar */
+  .chrome-bar {
+    @apply flex items-center gap-2 px-3 py-2 bg-surface border-b border-border;
+  }
+
+  /* Divider */
+  .divider {
+    @apply h-px bg-border my-4;
+  }
+}
+
+/* ─── Utility extensions ─── */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .animate-in {
+    animation: fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .slide-up {
+    animation: fade-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Authorization glow states */
+  .glow-authorized {
+    box-shadow: 0 0 0 1px rgba(20, 94, 50, 0.25),
+                0 0 32px rgba(20, 94, 50, 0.08);
+  }
+
+  .glow-blocked {
+    box-shadow: 0 0 0 1px rgba(185, 58, 43, 0.25),
+                0 0 32px rgba(185, 58, 43, 0.08);
+  }
+
+  /* Gradient text */
+  .text-gradient-ink {
+    background: linear-gradient(135deg, #141414 0%, #4a4a4a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Full bleed */
+  .full-bleed {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+  }
+}
+
+/* ─── Radix UI overrides ─── */
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
+}
+
+/* Tooltip */
+[data-radix-tooltip-content] {
+  @apply card shadow-md text-xs px-2.5 py-1.5 text-ink font-medium;
+}
+
+/* ─── Scrollable containers ─── */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #e2e0dc transparent;
+}
+
+/* ─── Print ─── */
+@media print {
+  .no-print { display: none !important; }
+}
