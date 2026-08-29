@@ -14,7 +14,7 @@ DAE_IDENTITY_KEY = serialization.load_pem_private_key(_raw.encode(), password=No
 AGENT_PUBLIC_KEY = os.environ.get("IISTA_AGENT_PUBLIC_KEY", "")
 TRUSTED_MERCHANT_PUBLIC_KEY = os.environ.get("IISTA_STORE_PUBLIC_KEY", "")
 STORE_URL = os.environ.get("IISTA_STORE_URL", "http://127.0.0.1:8000")
-ALLOWED_TOOLS = ["search_products", "checkout"]
+ALLOWED_TOOLS = ["search_products", "view_product", "add_to_cart", "checkout", "read_invoice"]
 class Intent(BaseModel): budget: int; domain: str
 class Authorize(BaseModel): intent: Intent; graph: list[dict]
 @app.post("/intent")
