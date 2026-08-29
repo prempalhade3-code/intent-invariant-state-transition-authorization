@@ -1,16 +1,8 @@
 "use client";
 import { motion } from "framer-motion";
-import {
-  Zap, Clock, GitFork, Shield, Key, Lock,
-  ArrowRight, CheckCircle, ShieldX,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { Badge } from "@/components/primitives/Badge";
 import type { Attack } from "@/lib/types";
-
-const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  Zap, Clock, GitFork, Shield, Key, Lock,
-};
 
 interface AttackCardProps {
   attack: Attack;
@@ -29,82 +21,71 @@ export function AttackCard({
   disabled,
   index = 0,
 }: AttackCardProps) {
-  const Icon = ICONS[attack.icon] ?? Zap;
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: index * 0.07 }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: index * 0.06 }}
       className={cn(
-        "bg-paper p-6 flex flex-col gap-5 transition-all duration-300 hover:bg-surface",
-        active && "border-accent bg-accent-light",
-        result === "blocked" && "border-blocked-border bg-danger-light",
-        result === "authorized" && "border-authorized-border bg-success-light",
+        "flex flex-col gap-4 rounded-[20px] border border-border bg-paper p-6 transition-all duration-300",
+        "hover:border-ink/20 hover:shadow-[0_4px_20px_rgba(10,10,10,0.05)]",
+        active && "border-ink/30 bg-[#FAFAF9] shadow-md",
+        result === "blocked" && "border-ink/25",
+        result === "authorized" && "border-ink/25",
       )}
     >
-      {/* Header */}
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div
-            className={cn(
-              "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0",
-              active ? "bg-accent text-paper" :
-              result === "blocked" ? "bg-danger text-paper" :
-              result === "authorized" ? "bg-success text-paper" :
-              "bg-surface border border-border text-ink-muted",
-            )}
-          >
-            <Icon className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold tracking-[-.035em] text-ink">{attack.title}</h3>
-            <p className="mt-0.5 text-xs text-ink-faint">{attack.subtitle}</p>
-          </div>
+        <div>
+          <span className="mb-2 inline-block font-mono text-[10px] tracking-wide text-ink-faint">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <h3 className="text-[17px] font-semibold tracking-[-0.03em] text-ink">{attack.title}</h3>
+          <p className="mt-1 text-[12px] font-normal text-ink-faint">{attack.subtitle}</p>
         </div>
 
         {result === "blocked" && (
-          <Badge variant="danger" size="sm" dot>Blocked</Badge>
+          <span className="rounded-full border border-border px-2.5 py-1 font-mono text-[9px] font-medium uppercase tracking-wide text-ink">
+            Blocked
+          </span>
         )}
         {result === "authorized" && (
-          <Badge variant="success" size="sm" dot>Authorized</Badge>
+          <span className="rounded-full border border-border px-2.5 py-1 font-mono text-[9px] font-medium uppercase tracking-wide text-ink-muted">
+            Authorized
+          </span>
         )}
         {active && !result && (
-          <Badge variant="accent" size="sm" dot>Running</Badge>
+          <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-wide text-ink-faint">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-ink" />
+            Running
+          </span>
         )}
       </div>
 
-      {/* What breaks */}
-      <p className="min-h-[64px] text-[13px] leading-relaxed text-ink-muted">{attack.whatBreaks}</p>
+      <p className="min-h-[56px] flex-1 text-[13px] font-normal leading-[1.6] text-ink-muted">
+        {attack.whatBreaks}
+      </p>
 
-      {/* Narrative */}
-      <p className="border-l border-border pl-3 text-[11px] leading-relaxed text-ink-faint">{attack.narrative}</p>
+      <p className="border-l-2 border-border pl-3 text-[11px] font-normal leading-relaxed text-ink-faint">
+        {attack.narrative}
+      </p>
 
-      {/* CTA */}
       <button
         onClick={() => !disabled && onRun(attack)}
         disabled={!!disabled}
         className={cn(
-          "mt-auto w-full flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-medium",
-          "transition-all duration-150 active:scale-[0.98]",
+          "mt-auto flex w-full items-center justify-center gap-2 rounded-full py-2.5 text-[13px] font-medium transition-all duration-200 active:scale-[0.98]",
           active
-            ? "bg-accent text-paper"
-            : result === "blocked"
-              ? "bg-danger text-paper"
-              : result === "authorized"
-                ? "bg-success text-paper"
-                : "bg-ink text-paper hover:bg-ink/90",
-          disabled && "opacity-50 cursor-not-allowed",
+            ? "bg-ink text-paper"
+            : "bg-ink text-paper hover:bg-ink/90",
+          disabled && "cursor-not-allowed opacity-40",
         )}
       >
         {active ? (
-          <>Running…</>
-        ) : result === "blocked" ? (
-          <><ShieldX className="w-4 h-4" /> Blocked — run again</>
-        ) : result === "authorized" ? (
-          <><CheckCircle className="w-4 h-4" /> Authorized — run again</>
+          "Running…"
+        ) : result ? (
+          <>Run again <ArrowRight className="h-3.5 w-3.5" /></>
         ) : (
-          <>Run scenario <ArrowRight className="w-4 h-4" /></>
+          <>Run scenario <ArrowRight className="h-3.5 w-3.5" /></>
         )}
       </button>
     </motion.div>

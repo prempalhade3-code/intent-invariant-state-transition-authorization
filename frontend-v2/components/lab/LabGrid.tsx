@@ -14,13 +14,24 @@ interface LabGridProps {
   activeId?: string | null;
   phase?: Phase;
   view?: ViewModel;
+  onReset?: () => void;
+  blocked?: boolean;
+  busy?: boolean;
 }
 
-export function LabGrid({ onAutonomous, onScenario, activeId, phase, view }: LabGridProps) {
+export function LabGrid({
+  onAutonomous,
+  onScenario,
+  activeId,
+  phase,
+  view,
+  onReset,
+  blocked,
+  busy,
+}: LabGridProps) {
   const [lastResults, setLastResults] = useState<Record<string, "authorized" | "blocked">>({});
   const resultRef = useRef<HTMLDivElement>(null);
 
-  // Record result when a run settles
   useEffect(() => {
     if (phase === "settled" && activeId && view) {
       const result = view.authorized === true ? "authorized" : "blocked";
@@ -30,7 +41,7 @@ export function LabGrid({ onAutonomous, onScenario, activeId, phase, view }: Lab
   }, [phase, activeId, view?.authorized]);
 
   const handleRun = (attack: Attack) => {
-    if (phase === "submitting" || phase === "live") return;
+    if (busy) return;
     if (attack.kind === "autonomous") {
       onAutonomous(attack.prompt ?? "", attack.demoEvent ?? "", attack.id);
     } else if (attack.scenario) {
@@ -38,47 +49,56 @@ export function LabGrid({ onAutonomous, onScenario, activeId, phase, view }: Lab
     }
   };
 
-  const busy = phase === "submitting" || phase === "live";
-
   return (
     <div className="space-y-10">
-      {/* Result banner */}
       <AnimatePresence>
         {phase === "settled" && view && (
-          <motion.div ref={resultRef} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="scroll-mt-24">
-            <p className="mb-3 text-[10px] font-mono uppercase tracking-[.15em] text-ink-faint">Decision</p>
-            <ResultBanner view={view} />
+          <motion.div
+            ref={resultRef}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="scroll-mt-24 rounded-[20px] border border-border bg-[#FAFAF9] p-6"
+          >
+            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+              Decision
+            </p>
+            <ResultBanner view={view} onReset={onReset} />
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-1 gap-px overflow-hidden rounded-[20px] border border-border bg-border md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {ATTACKS.map((attack, i) => (
           <AttackCard
             key={attack.id}
             attack={attack}
             onRun={handleRun}
-            active={activeId === attack.id && busy}
+            active={activeId === attack.id && !!busy}
             result={
               activeId === attack.id && phase === "settled"
-                ? view?.authorized === true ? "authorized" : "blocked"
+                ? view?.authorized === true
+                  ? "authorized"
+                  : "blocked"
                 : lastResults[attack.id] ?? null
             }
-            disabled={busy && activeId !== attack.id}
+            disabled={!!busy && activeId !== attack.id}
             index={i}
           />
         ))}
       </div>
 
-      {/* IISTA rail for active/settled run */}
       <AnimatePresence>
-        {view && phase !== "idle" && (
+        {view && phase !== "idle" && phase !== "settled" && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="card max-w-sm p-5"
+            className="rounded-[20px] border border-border bg-paper p-5 shadow-sm"
           >
+            <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+              Live rail
+            </p>
             <IISTARail view={view} phase={phase ?? "idle"} />
           </motion.div>
         )}

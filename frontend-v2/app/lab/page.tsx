@@ -1,14 +1,14 @@
 "use client";
-import { useRouter } from "next/navigation";
+
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { NavBar } from "@/components/shell/NavBar";
+import { LandingNav } from "@/components/landing/LandingNav";
 import { LabGrid } from "@/components/lab/LabGrid";
 import { useLiveRun } from "@/hooks/useLiveRun";
 
+const reveal = { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const };
+
 export default function LabPage() {
-  const router = useRouter();
   const { phase, view, activeAttack, startAutonomous, startScenario, reset } = useLiveRun();
 
   const handleAutonomous = async (prompt: string, demoEvent: string, id: string) => {
@@ -24,29 +24,33 @@ export default function LabPage() {
   };
 
   const blocked = view.authorized === false;
+  const busy = phase === "submitting" || phase === "live";
 
   return (
-    <div className="min-h-screen flex flex-col bg-surface">
-      <NavBar phase={phase} blocked={blocked} onReset={handleReset} />
+    <div className="min-h-screen bg-paper text-ink">
+      <LandingNav />
 
-      <main className="mx-auto w-full max-w-[1180px] flex-1 px-5 py-14 md:px-8 md:py-20 space-y-12">
-        {/* Header */}
+      <main className="mx-auto w-full max-w-[1000px] px-5 pb-24 pt-28 sm:px-8">
         <motion.div
-          className="max-w-3xl space-y-3"
-          initial={{ opacity: 0, y: 8 }}
+          className="mb-14 max-w-[640px]"
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
+          transition={reveal}
         >
           <Link
             href="/"
-            className="mb-5 inline-flex items-center gap-1.5 text-xs text-ink-faint hover:text-ink transition-colors"
+            className="mb-6 inline-block font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint transition-colors hover:text-ink"
           >
-            <ArrowLeft className="w-3 h-3" /> Back to demo
+            ← Home
           </Link>
-          <p className="text-[10px] font-mono uppercase tracking-[.16em] text-ink-faint">Security research environment</p>
-          <h1 className="text-[48px] leading-[.95] font-semibold text-ink tracking-[-.065em]">Break the assumptions.</h1>
-          <p className="max-w-2xl text-[17px] text-ink-muted leading-relaxed">
-            Six ways an autonomous purchase can become invalid. Each case runs against the same policy boundary. Each decision comes from SWORN, not the interface.
+          <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+            Incident Lab
+          </p>
+          <h1 className="text-[32px] font-medium leading-[1.1] tracking-[-0.045em] text-ink sm:text-[40px]">
+            Break the assumptions
+          </h1>
+          <p className="mt-4 text-[16px] font-normal leading-[1.6] tracking-[-0.01em] text-ink-muted">
+            Six hostile conditions. One invariant — payment cannot settle outside the user&apos;s word.
           </p>
         </motion.div>
 
@@ -56,8 +60,15 @@ export default function LabPage() {
           activeId={activeAttack}
           phase={phase}
           view={phase !== "idle" ? view : undefined}
+          onReset={handleReset}
+          blocked={blocked}
+          busy={busy}
         />
       </main>
+
+      <footer className="border-t border-border/60 px-6 py-10 text-center">
+        <p className="font-mono text-[10px] tracking-wide text-ink-faint">Sworn</p>
+      </footer>
     </div>
   );
 }

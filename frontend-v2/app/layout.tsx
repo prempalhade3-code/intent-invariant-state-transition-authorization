@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
-      <body className="font-sans bg-paper text-ink antialiased flex flex-col min-h-screen selection:bg-accent/15 selection:text-ink">
+      <body className="font-sans bg-paper text-ink antialiased flex flex-col min-h-screen selection:bg-ink/10 selection:text-ink">
         {children}
       </body>
     </html>

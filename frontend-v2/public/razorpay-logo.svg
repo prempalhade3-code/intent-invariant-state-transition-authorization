@@ -1,0 +1,8 @@
+<svg viewBox="0 0 108 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M8.4 2.2 5.8 19.8H4.1L6.7 2.2h1.7Zm5.8 0h2.5L13.1 19.8h-2.5l1.1-17.6Zm4.1 0c1.6 0 2.4.8 2.4 2.2 0 1.8-1.2 4.2-3.6 4.2-1.6 0-2.4-.8-2.4-2.2 0-1.8 1.2-4.2 3.6-4.2Zm-.8 3.3c.8 0 1.2-.4 1.2-1.1 0-.5-.3-.8-.8-.8-.8 0-1.2.4-1.2 1.1 0 .5.3.8.8.8Z" fill="#072654"/>
+  <path d="M22.8 2.2h2.5l-2 10h3l-.5 1.3h-3l-.4 2.7h-1.6l1.2-14Z" fill="#072654"/>
+  <path d="M28.2 2.2h1.6l-1.2 14h-1.6l1.2-14Z" fill="#072654"/>
+  <path d="M32.4 2.2h1.6l-1.2 14h-1.6l1.2-14Z" fill="#072654"/>
+  <path d="M6.7 2.2 10.2 2.2 8.1 14.7 4.6 14.7 6.7 2.2Z" fill="#08B4E8"/>
+  <text x="38" y="16.5" fill="#072654" font-size="14.5" font-weight="600" font-style="italic" font-family="Space Grotesk, ui-sans-serif, system-ui, sans-serif">Razorpay</text>
+</svg>

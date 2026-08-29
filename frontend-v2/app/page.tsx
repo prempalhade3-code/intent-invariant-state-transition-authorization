@@ -1,22 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { NavBar } from "@/components/shell/NavBar";
+import { LandingNav } from "@/components/landing/LandingNav";
+import { HeroVisual } from "@/components/landing/HeroVisual";
+import { RazorpayBadge } from "@/components/landing/RazorpayBadge";
 import { AnimatedHeadline } from "@/components/landing/AnimatedHeadline";
 import { IntentComposer } from "@/components/landing/IntentComposer";
+import { ComparisonCards } from "@/components/landing/ComparisonCards";
+import { FlowDiagram } from "@/components/landing/FlowDiagram";
+import { FeaturePanel } from "@/components/landing/FeaturePanel";
+import { BentoLab } from "@/components/landing/BentoLab";
 import { createRun } from "@/lib/api";
 import type { Phase } from "@/lib/types";
 
-const reveal = { duration: 0.52, ease: [0.22, 1, 0.36, 1] as const };
-
-const QUICK_PROMPTS = [
-  "VPS under $25",
-  "approved marketplace",
-  "sealed on send",
-];
+const ease = [0.22, 1, 0.36, 1] as const;
 
 export default function LandingPage() {
   const router = useRouter();
@@ -37,84 +36,62 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-paper">
-      <NavBar phase={phase} />
+    <div className="min-h-screen bg-paper text-ink">
+      <LandingNav />
 
-      <main className="flex-1 px-5 pb-20 pt-[108px] sm:px-8 md:pt-[120px]">
-        <section className="mx-auto flex w-full max-w-[680px] flex-col items-center text-center">
-          <motion.p
-            className="mb-5 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink-faint"
+      {/* Hero — exactly one viewport */}
+      <section className="relative h-[100dvh] min-h-[640px] max-h-[900px] overflow-hidden">
+        <HeroVisual />
+
+        <div className="relative z-10 mx-auto flex h-full w-full max-w-[900px] flex-col items-center px-5 pt-[168px] sm:px-8 sm:pt-[176px]">
+          <motion.div
+            className="mb-4 text-center"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={reveal}
+            transition={{ duration: 0.6, ease }}
           >
-            Authorization infrastructure
-          </motion.p>
-
-          <motion.div
-            className="mb-9 w-full"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...reveal, delay: 0.06 }}
-          >
-            <AnimatedHeadline />
+            <RazorpayBadge />
           </motion.div>
 
-          <div className="w-full">
+          <AnimatedHeadline />
+
+          <motion.p
+            className="mx-auto mt-4 max-w-[480px] text-center text-[15px] font-normal leading-[1.45] tracking-[-0.01em] text-[#737373] sm:text-[16px]"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.08, ease }}
+          >
+            One seal for intent, merchant proof and settlement.
+          </motion.p>
+
+          <div id="try" className="mx-auto mt-9 w-full max-w-[540px] scroll-mt-28 sm:mt-10">
             <IntentComposer
               onSubmit={(prompt) => handleAutonomous(prompt)}
               loading={busy}
               error={error}
             />
           </div>
+        </div>
+      </section>
 
-          <motion.div
-            className="mt-5 flex flex-wrap justify-center gap-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.45, delay: 0.28 }}
-          >
-            {QUICK_PROMPTS.map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full border border-border px-3 py-1.5 font-mono text-[10px] tracking-wide text-ink-faint"
-              >
-                {tag}
-              </span>
-            ))}
-          </motion.div>
-        </section>
+      <section id="how" className="scroll-mt-20 bg-paper py-24 md:py-32">
+        <ComparisonCards />
+      </section>
 
-        <motion.section
-          className="mx-auto mt-28 w-full max-w-[680px]"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...reveal, delay: 0.35 }}
-        >
-          <Link
-            href="/lab"
-            className="group flex items-center justify-between py-4 transition-colors hover:text-accent"
-          >
-            <div className="text-left">
-              <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint">
-                Incident Lab
-              </p>
-              <p className="text-[15px] font-medium tracking-[-0.02em] text-ink transition-colors group-hover:text-accent">
-                Six hostile conditions, one invariant
-              </p>
-            </div>
-            <span
-              aria-hidden
-              className="text-[15px] text-ink-faint transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-accent"
-            >
-              →
-            </span>
-          </Link>
-        </motion.section>
-      </main>
+      <section className="bg-[#FAFAF9]">
+        <FlowDiagram />
+      </section>
 
-      <footer className="px-6 py-8 text-center font-mono text-[10px] tracking-wide text-ink-faint">
-        Sworn
+      <section className="bg-paper">
+        <FeaturePanel />
+      </section>
+
+      <section className="bg-paper pb-32">
+        <BentoLab />
+      </section>
+
+      <footer className="border-t border-border/60 px-6 py-10 text-center">
+        <p className="font-mono text-[10px] tracking-wide text-ink-faint">Sworn</p>
       </footer>
     </div>
   );

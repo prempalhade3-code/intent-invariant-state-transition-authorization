@@ -15,7 +15,7 @@ const config: Config = {
           muted: "#6B6B6B",
           faint: "#A3A3A0",
         },
-        surface: "#F8F7F5",
+        surface: "#FAFAF9",
         paper: "#FFFFFF",
         border: {
           DEFAULT: "#E2E0DC",
@@ -162,6 +162,14 @@ const config: Config = {
           "0%, 100%": { boxShadow: "0 0 0 0 rgba(185,58,43,0)" },
           "50%": { boxShadow: "0 0 0 6px rgba(185,58,43,0.12)" },
         },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
+        "fade-in-up": {
+          from: { opacity: "0", transform: "translateY(24px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 0.35s cubic-bezier(0.16,1,0.3,1) forwards",
@@ -171,6 +179,8 @@ const config: Config = {
         shimmer: "shimmer 2s linear infinite",
         "glow-pulse": "glow-pulse 2s ease-in-out infinite",
         "glow-pulse-danger": "glow-pulse-danger 2s ease-in-out infinite",
+        float: "float 4s ease-in-out infinite",
+        "fade-in-up": "fade-in-up 0.6s cubic-bezier(0.22,1,0.36,1) forwards",
       },
       transitionTimingFunction: {
         spring: "cubic-bezier(0.16, 1, 0.3, 1)",
