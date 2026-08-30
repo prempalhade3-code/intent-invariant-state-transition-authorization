@@ -13,7 +13,7 @@ export function HeroVisual({ armed = false, stamping = false }: HeroVisualProps)
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden bg-[#0A0B0D]" aria-hidden>
-      <AuthorizationMatrix armed={armed} stamping={stamping} reducedMotion={!!reduced} />
+      <AuthorizationMatrix armed={armed} reducedMotion={!!reduced} />
 
       {/* center vignette — keeps copy legible, lighter at bottom */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_68%_52%_at_50%_36%,rgba(10,11,13,0.12)_0%,rgba(10,11,13,0.55)_48%,rgba(10,11,13,0.82)_72%)]" />

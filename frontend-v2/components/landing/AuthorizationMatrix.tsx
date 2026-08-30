@@ -24,17 +24,15 @@ function seeded(n: number) {
 
 interface AuthorizationMatrixProps {
   armed: boolean;
-  stamping: boolean;
   reducedMotion: boolean;
 }
 
-export function AuthorizationMatrix({ armed, stamping, reducedMotion }: AuthorizationMatrixProps) {
+export function AuthorizationMatrix({ armed, reducedMotion }: AuthorizationMatrixProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cellsRef = useRef<Cell[][]>([]);
   const beamRef = useRef(0);
   const beamVelRef = useRef(0);
   const cursorRef = useRef({ x: 0.5, y: 0.5 });
-  const stampFlashRef = useRef(0);
   const rafRef = useRef<number>(0);
   const sizeRef = useRef({ w: 0, h: 0, cols: 0, rows: 0, cell: 28 });
   const loadDoneRef = useRef(false);
@@ -76,25 +74,6 @@ export function AuthorizationMatrix({ armed, stamping, reducedMotion }: Authoriz
       }
     }
   }, []);
-
-  useEffect(() => {
-    if (!stamping) return;
-    stampFlashRef.current = 1;
-    const { cols, rows } = sizeRef.current;
-    const grid = cellsRef.current;
-    const cr = Math.floor(rows * 0.52);
-    const cc = Math.floor(cols * 0.5);
-    for (let dr = -4; dr <= 4; dr++) {
-      for (let dc = -8; dc <= 8; dc++) {
-        const r = cr + dr;
-        const c = cc + dc;
-        if (r >= 0 && r < rows && c >= 0 && c < cols) {
-          grid[r][c].state = "sealed";
-          grid[r][c].stateUntil = Date.now() + 2200;
-        }
-      }
-    }
-  }, [stamping]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -160,9 +139,6 @@ export function AuthorizationMatrix({ armed, stamping, reducedMotion }: Authoriz
 
       if (!reducedMotion) resolveCellsAtBeam(beamY, 0.04);
 
-      if (stampFlashRef.current > 0) {
-        stampFlashRef.current = Math.max(0, stampFlashRef.current - dt * 1.8);
-      }
       if (lockPulseRef.current > 0) {
         lockPulseRef.current = Math.max(0, lockPulseRef.current - dt * 0.9);
       }
@@ -249,15 +225,6 @@ export function AuthorizationMatrix({ armed, stamping, reducedMotion }: Authoriz
         lg.addColorStop(0.55, `rgba(16,185,129,${0.08 * lockPulseRef.current})`);
         lg.addColorStop(1, "rgba(16,185,129,0)");
         ctx.fillStyle = lg;
-        ctx.fillRect(0, 0, w, h);
-      }
-
-      if (stampFlashRef.current > 0) {
-        const flashR = (1 - stampFlashRef.current) * Math.max(w, h) * 0.45;
-        const g = ctx.createRadialGradient(w / 2, h * 0.52, 0, w / 2, h * 0.52, flashR);
-        g.addColorStop(0, `rgba(16,185,129,${0.35 * stampFlashRef.current})`);
-        g.addColorStop(1, "rgba(16,185,129,0)");
-        ctx.fillStyle = g;
         ctx.fillRect(0, 0, w, h);
       }
 

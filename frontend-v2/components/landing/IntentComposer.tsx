@@ -11,6 +11,7 @@ interface IntentComposerProps {
   onFocusChange?: (focused: boolean) => void;
   onStamp?: () => void;
   loading?: boolean;
+  loadingLabel?: string;
   error?: string | null;
   className?: string;
   variant?: "light" | "dark";
@@ -21,6 +22,7 @@ export function IntentComposer({
   onFocusChange,
   onStamp,
   loading,
+  loadingLabel,
   error,
   className,
   variant = "light",
@@ -124,7 +126,14 @@ export function IntentComposer({
                     : "bg-surface text-ink-faint cursor-not-allowed",
               )}
             >
-              {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Send"}
+              {loading ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  {loadingLabel}
+                </>
+              ) : (
+                "Send"
+              )}
             </button>
           </div>
         </motion.div>

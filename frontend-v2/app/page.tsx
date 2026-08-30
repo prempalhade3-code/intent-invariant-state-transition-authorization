@@ -24,12 +24,16 @@ export default function LandingPage() {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [launching, setLaunching] = useState(false);
   const [sealArmed, setSealArmed] = useState(false);
   const [sealStamping, setSealStamping] = useState(false);
-  const busy = phase === "submitting";
+  const busy = phase === "submitting" || launching;
 
   const handleAutonomous = async (prompt: string) => {
     setError(null);
+    setLaunching(true);
+    await new Promise((resolve) => window.setTimeout(resolve, 1500));
+    setLaunching(false);
     setPhase("submitting");
     try {
       const res = await createRun(prompt);
@@ -48,7 +52,7 @@ export default function LandingPage() {
       <section className="relative h-[100dvh] min-h-[640px] overflow-hidden bg-[#0A0B0D]">
         <HeroVisual armed={sealArmed} stamping={sealStamping} />
 
-        <div className="relative z-10 mx-auto flex h-full w-full max-w-[900px] flex-col items-center px-5 pt-[168px] sm:px-8 sm:pt-[176px]">
+        <div className="relative z-10 mx-auto flex h-full w-full max-w-[900px] flex-col items-center px-5 pt-[216px] sm:px-8 sm:pt-[224px]">
           <motion.div
             className="mb-4 text-center"
             initial={{ opacity: 0, y: 8 }}
@@ -78,6 +82,9 @@ export default function LandingPage() {
                 window.setTimeout(() => setSealStamping(false), 900);
               }}
               loading={busy}
+              loadingLabel={
+                launching ? "Launching agent" : phase === "submitting" ? "Sealing intent" : undefined
+              }
               error={error}
               variant="dark"
             />
