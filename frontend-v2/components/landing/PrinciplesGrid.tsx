@@ -4,39 +4,39 @@ import { motion } from "framer-motion";
 const PRINCIPLES = [
   {
     number: "01",
-    title: "Intent becomes policy",
-    body: "The user's natural-language goal is normalized into a cryptographically-bound policy: budget ceiling, allowed merchant, permitted tools, approved domains. The agent receives the policy. It cannot modify it.",
+    title: "A limit that can be bypassed will be.",
+    body: "The user's goal is sealed into a cryptographic policy before execution begins. The agent receives the rules; it cannot modify them.",
   },
   {
     number: "02",
-    title: "The agent navigates freely",
-    body: "Search, inspect, add to cart, create checkout, read invoice. SWORN observes every action but never controls the agent's decisions. The agent operates with real autonomy inside a real commerce environment.",
+    title: "Autonomy requires freedom.",
+    body: "The agent searches, inspects, and builds the cart independently. We observe the execution path but never control the decisions.",
   },
   {
     number: "03",
-    title: "Only proof unlocks payment",
-    body: "The DAE independently verifies the full execution path, merchant proof, live oracle price, and hash chain before signing. If anything has drifted from the authorized state, payment doesn't happen.",
+    title: "Only proof unlocks payment.",
+    body: "The enclave verifies the execution path, merchant proof, and live oracle price against the policy. If any invariant drifts, payment fails.",
   },
 ];
 
 export function PrinciplesGrid() {
   return (
-    <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-px bg-border rounded-2xl overflow-hidden border border-border">
+    <div className="w-full mt-12 grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left">
       {PRINCIPLES.map((p, i) => (
         <motion.div
           key={p.number}
-          className="bg-paper px-6 py-7 flex flex-col gap-3"
+          className="flex flex-col gap-3"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.3 + i * 0.08 }}
         >
-          <span className="text-2xs font-bold tracking-widest text-accent uppercase">
+          <span className="font-mono text-[11px] text-ink-faint tracking-widest mb-1">
             {p.number}
           </span>
-          <h3 className="text-base font-semibold text-ink leading-snug">
+          <h3 className="text-[17px] font-medium text-ink leading-[1.4] tracking-tight">
             {p.title}
           </h3>
-          <p className="text-sm text-ink-muted leading-relaxed">
+          <p className="text-[15px] text-ink-muted leading-[1.6]">
             {p.body}
           </p>
         </motion.div>

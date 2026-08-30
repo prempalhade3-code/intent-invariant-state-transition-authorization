@@ -18,10 +18,10 @@ export function FlowDiagram() {
       transition={{ duration: 0.7, ease }}
     >
       <div className="mb-14 text-center">
-        <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+        <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.14em] text-white/35">
           Architecture
         </p>
-        <h2 className="text-[26px] font-medium leading-[1.15] tracking-[-0.04em] text-ink sm:text-[32px]">
+        <h2 className="text-[26px] font-medium leading-[1.15] tracking-[-0.04em] text-[#F4F5F7] sm:text-[32px]">
           One layer between agent action
           <br />
           and money movement
@@ -34,16 +34,16 @@ export function FlowDiagram() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.55, ease }}
-          className="w-full max-w-[200px] rounded-[18px] border border-border bg-paper p-4"
+          className="w-full max-w-[200px] rounded-[18px] border border-white/[0.08] bg-[#12141a] p-4"
         >
-          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-faint">
+          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.12em] text-white/35">
             AI agents
           </p>
           <div className="grid grid-cols-2 gap-2">
             {AGENTS.map((a) => (
               <div
                 key={a}
-                className="rounded-lg border border-border bg-surface px-2 py-2 text-center text-[11px] font-medium text-ink-muted"
+                className="rounded-lg border border-white/[0.08] bg-[#161820] px-2 py-2 text-center text-[11px] font-medium text-white/50"
               >
                 {a}
               </div>
@@ -57,11 +57,11 @@ export function FlowDiagram() {
             whileInView={{ scaleX: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2, ease }}
-            className="flex flex-col items-center gap-1 origin-left"
+            className="flex origin-left flex-col items-center gap-1"
           >
-            <span className="font-mono text-[10px] text-ink-faint">asks</span>
-            <div className="h-px w-12 bg-border md:w-16" />
-            <span className="text-ink-faint">→</span>
+            <span className="font-mono text-[10px] text-white/35">asks</span>
+            <div className="h-px w-12 bg-white/[0.08] md:w-16" />
+            <span className="text-white/35">→</span>
           </motion.div>
         </div>
 
@@ -70,10 +70,10 @@ export function FlowDiagram() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.55, delay: 0.15, ease }}
-          className="rounded-[18px] bg-ink px-6 py-5 text-paper shadow-lg"
+          className="rounded-[18px] border border-[#10B981]/30 bg-[#10B981]/10 px-6 py-5 shadow-[0_0_32px_rgba(16,185,129,0.08)]"
         >
-          <p className="text-[15px] font-semibold tracking-[-0.02em]">Sworn</p>
-          <p className="mt-0.5 font-mono text-[10px] font-normal text-paper/60">
+          <p className="text-[15px] font-semibold tracking-[-0.02em] text-[#F4F5F7]">Sworn</p>
+          <p className="mt-0.5 font-mono text-[10px] font-normal text-[#10B981]/70">
             DAE · intent seal · MCP
           </p>
         </motion.div>
@@ -84,11 +84,11 @@ export function FlowDiagram() {
             whileInView={{ scaleX: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.35, ease }}
-            className="flex flex-col items-center gap-1 origin-left"
+            className="flex origin-left flex-col items-center gap-1"
           >
-            <span className="font-mono text-[10px] text-ink-faint">verifies</span>
-            <div className="h-px w-12 bg-border md:w-16" />
-            <span className="text-ink-faint">→</span>
+            <span className="font-mono text-[10px] text-white/35">verifies</span>
+            <div className="h-px w-12 bg-white/[0.08] md:w-16" />
+            <span className="text-white/35">→</span>
           </motion.div>
         </div>
 
@@ -97,16 +97,16 @@ export function FlowDiagram() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.55, delay: 0.25, ease }}
-          className="w-full max-w-[240px] rounded-[18px] border border-border bg-paper p-4"
+          className="w-full max-w-[240px] rounded-[18px] border border-white/[0.08] bg-[#12141a] p-4"
         >
-          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-faint">
+          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.12em] text-white/35">
             What you get
           </p>
           <div className="flex flex-wrap gap-1.5">
             {OUTPUTS.map((label) => (
               <span
                 key={label}
-                className="inline-flex items-center rounded-full border border-border px-2.5 py-1 font-mono text-[9px] text-ink-muted"
+                className="inline-flex items-center rounded-full border border-white/[0.08] bg-[#161820] px-2.5 py-1 font-mono text-[9px] text-white/45"
               >
                 {label}
               </span>
@@ -120,7 +120,7 @@ export function FlowDiagram() {
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         transition={{ delay: 0.5, duration: 0.5 }}
-        className="mt-8 text-center font-mono text-[10px] tracking-wide text-ink-faint"
+        className="mt-8 text-center font-mono text-[10px] tracking-wide text-white/35"
       >
         Field requests · queued builds · independent commit
       </motion.p>

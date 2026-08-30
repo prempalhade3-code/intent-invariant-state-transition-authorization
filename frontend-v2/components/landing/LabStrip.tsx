@@ -1,7 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import {
-  Zap, Clock, GitFork, Shield, Key, Lock, ArrowRight,
+  Zap, Clock, GitFork, Shield, Key, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ATTACKS } from "@/lib/api";
@@ -30,20 +30,12 @@ export function LabStrip({ onAutonomous, onScenario, disabled, activeId }: LabSt
 
   return (
     <motion.div
-      className="w-full max-w-5xl"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4, delay: 0.5 }}
+      className="w-full mx-auto"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.4 }}
     >
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-xs text-ink-faint font-medium whitespace-nowrap">
-          or test a live security scenario
-        </span>
-        <div className="h-px flex-1 bg-border" />
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {ATTACKS.map((attack, i) => {
           const Icon = ICONS[attack.icon] ?? Zap;
           const isActive = activeId === attack.id;
@@ -53,27 +45,27 @@ export function LabStrip({ onAutonomous, onScenario, disabled, activeId }: LabSt
               key={attack.id}
               onClick={() => handleAttack(attack)}
               disabled={!!disabled}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.55 + i * 0.04 }}
+              transition={{ duration: 0.4, delay: 0.45 + i * 0.05 }}
               className={cn(
-                "group relative flex flex-col items-start gap-2 p-3.5 rounded-xl border",
-                "text-left transition-all duration-150 active:scale-[0.97]",
+                "group relative flex flex-col items-center justify-center text-center gap-3 p-5 rounded-2xl border",
+                "transition-all duration-200 active:scale-[0.98]",
                 isActive
-                  ? "border-accent bg-accent-light"
+                  ? "border-accent bg-accent-light shadow-sm"
                   : "border-border bg-paper hover:border-border-strong hover:shadow-sm",
                 disabled && !isActive && "opacity-50 cursor-not-allowed",
               )}
             >
               <Icon
                 className={cn(
-                  "w-4 h-4 flex-shrink-0",
+                  "w-5 h-5 flex-shrink-0 transition-colors",
                   isActive ? "text-accent" : "text-ink-faint group-hover:text-ink-muted",
                 )}
               />
               <span
                 className={cn(
-                  "text-xs font-semibold leading-snug",
+                  "text-[13px] font-medium leading-tight",
                   isActive ? "text-accent" : "text-ink",
                 )}
               >
@@ -84,7 +76,7 @@ export function LabStrip({ onAutonomous, onScenario, disabled, activeId }: LabSt
         })}
       </div>
 
-      <p className="mt-3 text-center text-xs text-ink-faint">
+      <p className="mt-8 text-center text-[11px] font-mono tracking-widest uppercase text-ink-faint">
         Each scenario runs the real agent and DAE. Not a simulation.
       </p>
     </motion.div>

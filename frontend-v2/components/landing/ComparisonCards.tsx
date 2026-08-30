@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/cn";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -10,9 +11,12 @@ const PROMPT = "Find a VPS under $25 and purchase from the approved marketplace.
 function ChatBubble({ children, faded }: { children: React.ReactNode; faded?: boolean }) {
   return (
     <div
-      className={`rounded-2xl px-4 py-3 text-[13px] leading-[1.55] tracking-[-0.01em] ${
-        faded ? "bg-surface text-ink-faint" : "border border-border bg-paper text-ink"
-      }`}
+      className={cn(
+        "rounded-2xl px-4 py-3 text-[13px] leading-[1.55] tracking-[-0.01em]",
+        faded
+          ? "bg-[#12141a] text-white/35"
+          : "border border-white/[0.08] bg-[#161820] text-[#F4F5F7]",
+      )}
     >
       {children}
     </div>
@@ -52,10 +56,10 @@ export function ComparisonCards() {
       onViewportEnter={() => setInView(true)}
     >
       <div className="mb-10 text-center">
-        <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+        <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.14em] text-white/35">
           Why a seal, not a prompt
         </p>
-        <h2 className="text-[26px] font-medium leading-[1.15] tracking-[-0.04em] text-ink sm:text-[32px]">
+        <h2 className="text-[26px] font-medium leading-[1.15] tracking-[-0.04em] text-[#F4F5F7] sm:text-[32px]">
           Power your agents to spend
           <br />
           <span className="font-semibold">within the word they were given</span>
@@ -68,19 +72,19 @@ export function ComparisonCards() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1, ease }}
-          className="rounded-[20px] border border-border bg-surface/50 p-5 sm:p-6"
+          className="rounded-[20px] border border-white/[0.08] bg-[#12141a]/50 p-5 sm:p-6"
         >
-          <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-faint">
+          <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.12em] text-white/35">
             Without Sworn
           </p>
           <div className="space-y-3">
             <ChatBubble>{PROMPT}</ChatBubble>
             <ChatBubble faded>
-              <span className="font-medium text-ink-muted">Agent</span>
+              <span className="font-medium text-white/50">Agent</span>
               <p className="mt-1.5">
                 Checkout complete. $189 VPS Premium added to cart. Processing payment…
               </p>
-              <p className="mt-2 text-ink-faint">No independent check between intent and settlement.</p>
+              <p className="mt-2 text-white/35">No independent check between intent and settlement.</p>
             </ChatBubble>
           </div>
         </motion.div>
@@ -90,14 +94,14 @@ export function ComparisonCards() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.18, ease }}
-          className="rounded-[20px] border border-ink/15 bg-paper p-5 shadow-[0_4px_24px_rgba(10,10,10,0.05)] sm:p-6"
+          className="rounded-[20px] border border-[#10B981]/20 bg-[#12141a] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.3)] sm:p-6"
         >
           <div className="mb-4 flex items-center gap-2">
-            <span className="rounded-full bg-ink px-3 py-1 font-mono text-[10px] text-paper">
+            <span className="rounded-full bg-[#10B981] px-3 py-1 font-mono text-[10px] text-[#0A0B0D]">
               With Sworn
             </span>
-            <span className="flex items-center gap-1.5 font-mono text-[10px] text-ink-faint">
-              <span className="h-1.5 w-1.5 rounded-full bg-ink animate-pulse-dot" />
+            <span className="flex items-center gap-1.5 font-mono text-[10px] text-white/35">
+              <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-[#10B981]" />
               live
             </span>
           </div>
@@ -105,14 +109,14 @@ export function ComparisonCards() {
             <ChatBubble>{PROMPT}</ChatBubble>
             <ChatBubble>
               <span className="font-semibold">Agent, sealed by Sworn</span>
-              <p className="mt-1.5 font-normal text-ink-muted">
+              <p className="mt-1.5 font-normal text-white/50">
                 <TypingText
                   active={inView}
                   text="Invoice $189 exceeds $25 ceiling. DAE rejected signature. Payment blocked."
                 />
               </p>
-              <div className="mt-3 rounded-lg border border-border bg-surface px-3 py-2 font-mono text-[10px] text-ink-muted">
-                <span className="font-medium text-ink">blocked</span> · policy_hash match · oracle stale
+              <div className="mt-3 rounded-lg border border-white/[0.08] bg-[#0A0B0D] px-3 py-2 font-mono text-[10px] text-white/45">
+                <span className="font-medium text-[#E5484D]">blocked</span> · policy_hash match · oracle stale
               </div>
             </ChatBubble>
           </div>
