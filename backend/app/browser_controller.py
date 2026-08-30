@@ -29,7 +29,16 @@ class BrowserController:
                 await self._page.goto(STORE_URL + "/products?query=" + params.get("query", "VPS") + "&run_id=" + self.run_id); output = (await self._page.locator("body").inner_text())
                 import json; output = {"products": json.loads(output)["products"]}
             elif tool == "view_product":
-                await self._page.goto(f"{STORE_URL}/product/{params['product_id']}"); output = {"product_id": params["product_id"], "price": await self._page.locator("[data-price]").get_attribute("data-price")}
+                await self._page.goto(f"{STORE_URL}/product/{params['product_id']}?run={self.run_id}")
+                price_el = self._page.locator("[data-price]")
+                if await price_el.count():
+                    price = await price_el.first.get_attribute("data-price")
+                else:
+                    async with httpx.AsyncClient(timeout=5) as c:
+                        r = await c.get(f"{STORE_URL}/products/{params['product_id']}")
+                        r.raise_for_status()
+                        price = str(r.json()["product"]["price"])
+                output = {"product_id": params["product_id"], "price": int(price) if price else None}
             elif tool == "add_to_cart":
                 await self._page.goto(STORE_URL + "/product/" + params["product_id"])
                 async with httpx.AsyncClient(timeout=5) as c: r = await c.post(f"{STORE_URL}/cart/{self.run_id}", json={"product_id": params["product_id"], "quantity": 1}); r.raise_for_status(); output = r.json()
@@ -37,12 +46,12 @@ class BrowserController:
                 await self._page.goto(STORE_URL + "/checkout")
                 async with httpx.AsyncClient(timeout=5) as c: r = await c.post(f"{STORE_URL}/checkout", json={"product_id": params["product_id"], "run_id": self.run_id}); r.raise_for_status(); output = r.json()
             else:
-                async with httpx.AsyncClient(timeout=5) as c: r = await c.get(f"{STORE_URL}/invoice/{params['invoice_id']}"); r.raise_for_status(); output = r.json()
+                async with httpx.AsyncClient(timeout=5) as c: r = await c.get(f"{STORE_URL}/api/invoice/{params['invoice_id']}"); r.raise_for_status(); output = r.json()
             return {"tool": tool, "domain": ALLOWED_DOMAIN, "url": self._page.url, "output": output}
         async with httpx.AsyncClient(timeout=5) as c:
             if tool == "search_products": r = await c.get(f"{STORE_URL}/products", params={"query": params.get("query", "VPS"), "run_id": self.run_id})
             elif tool == "view_product": r = await c.get(f"{STORE_URL}/products/{params['product_id']}")
             elif tool == "add_to_cart": r = await c.post(f"{STORE_URL}/cart/{self.run_id}", json={"product_id": params["product_id"], "quantity": 1})
             elif tool == "checkout": r = await c.post(f"{STORE_URL}/checkout", json={"product_id": params["product_id"], "run_id": self.run_id})
-            else: r = await c.get(f"{STORE_URL}/invoice/{params['invoice_id']}")
+            else: r = await c.get(f"{STORE_URL}/api/invoice/{params['invoice_id']}")
             r.raise_for_status(); return {"tool": tool, "domain": ALLOWED_DOMAIN, "url": str(r.url), "output": r.json()}
