@@ -49,6 +49,27 @@ export async function createRun(
   });
 }
 
+export async function startRun(runId: string): Promise<{ run_id: string; status: string }> {
+  return request<{ run_id: string; status: string }>(`/api/runs/${runId}/start`, {
+    method: "POST",
+  });
+}
+
+export async function cancelRun(runId: string): Promise<{ run_id: string; status: string }> {
+  return request<{ run_id: string; status: string }>(`/api/runs/${runId}/cancel`, {
+    method: "POST",
+  });
+}
+
+export async function finalizeOrder(runId: string): Promise<{
+  order: import("./types").OrderData;
+  status: string;
+}> {
+  return request(`/store/api/orders/finalize/${encodeURIComponent(runId)}`, {
+    method: "POST",
+  });
+}
+
 export async function getRun(runId: string): Promise<RunRecord> {
   return request<RunRecord>(`/api/runs/${runId}`);
 }
@@ -107,6 +128,30 @@ export async function fetchProduct(
   return request<{ product: import("./types").Product }>(
     `/store/products/${productId}`,
   );
+}
+
+export async function fetchCart(runId: string): Promise<{ run_id: string; cart: import("./types").CartItem[] }> {
+  return request(`/store/cart/${runId}`);
+}
+
+export async function fetchCheckoutByRun(runId: string): Promise<{
+  run_id: string;
+  checkout: Record<string, unknown> | null;
+  invoice: import("./types").InvoiceData | null;
+}> {
+  return request(`/store/checkout/by-run/${runId}`);
+}
+
+export async function fetchOrders(runId?: string): Promise<{ orders: import("./types").OrderData[] }> {
+  const url = runId ? `/store/api/orders?run_id=${encodeURIComponent(runId)}` : "/store/api/orders";
+  return request(url);
+}
+
+export async function fetchOrder(orderId: string): Promise<{
+  order: import("./types").OrderData;
+  invoice: import("./types").InvoiceData | null;
+}> {
+  return request(`/store/api/order/${orderId}`);
 }
 
 // ─── Attack definitions ───────────────────────────────────────────────────────

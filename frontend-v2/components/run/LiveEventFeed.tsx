@@ -9,16 +9,17 @@ interface LiveEventFeedProps {
   events: RunEvent[];
   maxItems?: number;
   className?: string;
+  dark?: boolean;
 }
 
-export function LiveEventFeed({ events, maxItems = 20, className }: LiveEventFeedProps) {
+export function LiveEventFeed({ events, maxItems = 20, className, dark }: LiveEventFeedProps) {
   const sorted = [...events].sort((a, b) => a.sequence - b.sequence);
   const recent = sorted.slice(-maxItems).reverse(); // newest first
 
   if (!recent.length) {
     return (
       <div className={cn("py-3 text-center", className)}>
-        <p className="text-xs text-ink-faint">
+        <p className={cn("text-xs", dark ? "text-white/35" : "text-ink-faint")}>
           Events will appear here as the agent works
         </p>
       </div>
@@ -41,13 +42,18 @@ export function LiveEventFeed({ events, maxItems = 20, className }: LiveEventFee
               animate={{ opacity: 1, height: "auto" }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
               className={cn(
-                "flex items-start gap-2.5 py-1.5 border-b border-border last:border-0",
+                "flex items-start gap-2.5 py-1.5 border-b last:border-0",
+                dark ? "border-white/[0.06]" : "border-border",
                 significant && "opacity-100",
                 !significant && "opacity-70",
               )}
             >
-              {/* Sequence number */}
-              <span className="text-2xs font-mono text-ink-faint w-5 flex-shrink-0 pt-0.5 text-right">
+              <span
+                className={cn(
+                  "text-2xs font-mono w-5 flex-shrink-0 pt-0.5 text-right",
+                  dark ? "text-white/30" : "text-ink-faint",
+                )}
+              >
                 {event.sequence}
               </span>
 
@@ -66,7 +72,13 @@ export function LiveEventFeed({ events, maxItems = 20, className }: LiveEventFee
                 <p
                   className={cn(
                     "text-xs leading-snug",
-                    significant ? "text-ink font-medium" : "text-ink-muted",
+                    dark
+                      ? significant
+                        ? "text-white/80 font-medium"
+                        : "text-white/45"
+                      : significant
+                        ? "text-ink font-medium"
+                        : "text-ink-muted",
                   )}
                 >
                   {narrative}

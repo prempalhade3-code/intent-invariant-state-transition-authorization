@@ -40,6 +40,9 @@ export type Payment = {
   transaction_id?: string;
   amount?: number;
   detail?: string;
+  order_id?: string;
+  invoice_id?: string;
+  run_id?: string;
   transaction?: { amount?: number; invoice_id?: string; domain?: string };
 };
 
@@ -120,16 +123,38 @@ export type InvoiceData = {
 };
 
 export type OrderData = {
+  order_id?: string;
   status: string;
   transaction_id: string;
   amount: number;
+  price?: number;
   invoice_id?: string;
   domain?: string;
+  product_id?: string;
+  run_id?: string;
+  created_at?: string;
 };
 
-// ─── UI / ViewModel types ──────────────────────────────────────────────────────
-
 export type Phase = "idle" | "submitting" | "live" | "settled" | "error";
+
+export type TransactionStage =
+  | "sealed"
+  | "search"
+  | "inspect"
+  | "cart"
+  | "checkout"
+  | "verify"
+  | "authorize"
+  | "pay"
+  | "complete"
+  | "blocked";
+
+export type StoreSnapshot = {
+  cart: CartItem[];
+  checkout: CheckoutData | null;
+  invoice: InvoiceData | null;
+  order: OrderData | null;
+};
 
 export type CommerceView =
   | "catalog"

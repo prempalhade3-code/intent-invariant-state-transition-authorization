@@ -12,6 +12,7 @@ import type {
   RunEvent,
   RunRecord,
   RunResult,
+  TransactionStage,
   VerificationCheck,
 } from "./types";
 
@@ -49,6 +50,7 @@ export type ViewModel = {
   invoice: InvoiceData | null;
   order: OrderData | null;
   agentSteps: AgentStep[];
+  stage: TransactionStage;
 };
 
 export const emptyView = (): ViewModel => ({
@@ -74,6 +76,7 @@ export const emptyView = (): ViewModel => ({
   invoice: null,
   order: null,
   agentSteps: [],
+  stage: "sealed",
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -236,24 +239,49 @@ function deriveCommerceView(events: RunEvent[], authorized: boolean | null, bloc
 
 function deriveCartItems(events: RunEvent[]): CartItem[] {
   for (const event of [...events].reverse()) {
-    if (
-      event.event_type === "browser_action" &&
-      event.payload?.tool === "add_to_cart"
-    ) {
-      const output = asRecord(event.payload?.output as unknown);
+    const p = event.payload ?? {};
+    if (event.event_type === "merchant_response" && p.tool === "add_to_cart") {
+      const output = asRecord(p.output as unknown);
       const cart = output?.cart;
       if (Array.isArray(cart)) return cart as CartItem[];
     }
-    if (
-      event.event_type === "merchant_response" &&
-      event.payload?.tool === "add_to_cart"
-    ) {
-      const output = asRecord(event.payload?.output as unknown);
+    if (event.event_type === "browser_action" && p.tool === "add_to_cart") {
+      const output = asRecord(p.output as unknown);
       const cart = output?.cart;
       if (Array.isArray(cart)) return cart as CartItem[];
     }
   }
   return [];
+}
+
+function deriveStage(events: RunEvent[], authorized: boolean | null, blocked: boolean): TransactionStage {
+  if (blocked) return "blocked";
+  if (events.some((e) => e.event_type === "payment_settled")) return "complete";
+  if (events.some((e) => e.event_type === "payment_submitted")) return "pay";
+  if (events.some((e) => e.event_type === "authorization_granted")) return "authorize";
+  if (events.some((e) => e.event_type === "verification_result")) return "verify";
+  if (events.some((e) => e.event_type === "merchant_response" && e.payload?.tool === "checkout")) return "checkout";
+  if (events.some((e) => e.event_type === "merchant_response" && e.payload?.tool === "add_to_cart")) return "cart";
+  if (events.some((e) => e.event_type === "agent_decision")) return "inspect";
+  if (events.some((e) => e.event_type === "browser_action" && e.payload?.tool === "search_products")) return "search";
+  if (events.some((e) => e.event_type === "policy_sealed" || e.event_type === "intent_normalized")) return "sealed";
+  return "sealed";
+}
+
+export function agentActionLabel(stage: TransactionStage, productId?: string | null): string {
+  switch (stage) {
+    case "sealed": return "Policy sealed, starting search";
+    case "search": return "Searching marketplace for VPS plans";
+    case "inspect": return `Inspecting ${productId ?? "product"}`;
+    case "cart": return `Adding ${productId ?? "item"} to cart`;
+    case "checkout": return "Creating checkout and invoice";
+    case "verify": return "Sworn verifying transaction";
+    case "authorize": return "Payment authorized by Sworn";
+    case "pay": return "Settling payment";
+    case "complete": return "Order confirmed";
+    case "blocked": return "Transaction blocked";
+    default: return "Working";
+  }
 }
 
 function deriveCheckout(events: RunEvent[]): CheckoutData | null {
@@ -319,28 +347,29 @@ function deriveOrder(events: RunEvent[]): OrderData | null {
   for (const event of [...events].reverse()) {
     if (event.event_type === "payment_settled") {
       const p = event.payload;
+      const tx = asRecord(p?.transaction as unknown);
       return {
+        order_id: typeof p?.order_id === "string" ? p.order_id : undefined,
         status: String(p?.status ?? "paid"),
-        transaction_id: String(
-          p?.transaction_id ??
-            (asRecord(p?.transaction as unknown)?.invoice_id
-              ? `tx-${asRecord(p?.transaction as unknown)?.invoice_id}`
-              : "tx-iista"),
-        ),
-        amount: Number(
-          p?.amount ??
-            (asRecord(p?.transaction as unknown))?.amount ?? 0,
-        ),
-        invoice_id: String(
-          (asRecord(p?.transaction as unknown))?.invoice_id ?? "",
-        ),
-        domain: String(
-          (asRecord(p?.transaction as unknown))?.domain ?? "",
-        ),
+        transaction_id: String(p?.transaction_id ?? (tx?.invoice_id ? `tx-${tx.invoice_id}` : "tx-iista")),
+        amount: Number(p?.amount ?? tx?.amount ?? 0),
+        invoice_id: String(p?.invoice_id ?? tx?.invoice_id ?? ""),
+        domain: String(tx?.domain ?? ""),
+        product_id: viewProductFromEvents(events),
+        run_id: typeof p?.run_id === "string" ? p.run_id : undefined,
       };
     }
   }
   return null;
+}
+
+function viewProductFromEvents(events: RunEvent[]): string | undefined {
+  for (const e of [...events].reverse()) {
+    if (e.event_type === "agent_decision" && typeof e.payload?.selected_product === "string") {
+      return e.payload.selected_product;
+    }
+  }
+  return undefined;
 }
 
 // ─── Main reducer ─────────────────────────────────────────────────────────────
@@ -369,6 +398,11 @@ export function reduceEvents(
         if (typeof p.source === "string") view.policySource = p.source;
         break;
       }
+
+      case "policy_sealed":
+        if (asRecord(p.ssi)) view.ssi = asRecord(p.ssi);
+        if (asRecord(p.policy)) view.policy = asRecord(p.policy) as IntentPolicy;
+        break;
 
       case "agent_plan_created":
         view.plan = p.actions ?? p.prompt ?? p;
@@ -456,6 +490,7 @@ export function reduceEvents(
   view.invoice = deriveInvoice(view.events, view.checkout);
   view.order = deriveOrder(view.events);
   view.agentSteps = buildAgentSteps(view.events, view.authorized, blocked);
+  view.stage = deriveStage(view.events, view.authorized, blocked);
 
   return view;
 }
