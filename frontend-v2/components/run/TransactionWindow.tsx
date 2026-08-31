@@ -32,10 +32,10 @@ function LogLine({
 }) {
   return (
     <div className={cn("mb-5 shrink-0", dim && "opacity-55")}>
-      <p className="truncate text-[14px] font-normal leading-none text-white/75">
+      <p className="text-[13px] font-normal leading-snug text-white/75 sm:text-[14px] sm:leading-none">
         {human}
       </p>
-      <p className="mt-1.5 truncate text-[12px] font-normal leading-none text-[#10B981]/55">
+      <p className="mt-1.5 text-[11px] font-normal leading-snug text-[#10B981]/55 sm:truncate sm:text-[12px] sm:leading-none">
         {technical}
       </p>
     </div>
@@ -77,10 +77,9 @@ export function TransactionWindow({
 
   return (
     <div
-      className="flex w-full flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-[#141414] shadow-[0_24px_80px_rgba(0,0,0,0.5)]"
-      style={{ width: "100%", maxWidth: TERMINAL_W, height: TERMINAL_H }}
+      className="flex h-[min(816px,calc(100dvh-11rem))] w-full max-w-[1376px] flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-[#141414] shadow-[0_24px_80px_rgba(0,0,0,0.5)] sm:h-[min(816px,calc(100dvh-10rem))] md:h-[816px]"
     >
-      <div className="grid shrink-0 grid-cols-[auto_1fr_auto] items-center gap-2 border-b border-black/40 bg-[#2b2b2b] px-4 py-2.5">
+      <div className="grid shrink-0 grid-cols-[auto_1fr] items-center gap-2 border-b border-black/40 bg-[#2b2b2b] px-3 py-2.5 sm:grid-cols-[auto_1fr_auto] sm:px-4">
         <div className="flex gap-1.5">
           <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
           <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
@@ -95,7 +94,7 @@ export function TransactionWindow({
           />
           <span className="font-mono text-[11px] text-white/45">Agent</span>
         </div>
-        <div className="min-w-0 text-right font-mono text-[10px]">
+        <div className="col-span-2 min-w-0 text-right font-mono text-[9px] sm:col-span-1 sm:text-[10px]">
           {storeConnected && (
             <>
               <span className="text-white/40">Verified marketplace · </span>
@@ -113,7 +112,7 @@ export function TransactionWindow({
       </div>
 
       {isBoot ? (
-        <div className="flex min-h-0 flex-1 flex-col px-10 font-mono">
+        <div className="flex min-h-0 flex-1 flex-col px-5 font-mono sm:px-10">
           <div className="flex flex-1 flex-col items-center justify-end pb-6 text-center">
             <p className="text-[11px] uppercase tracking-[0.28em] text-white/35">
               {beat.label}
@@ -133,7 +132,7 @@ export function TransactionWindow({
       ) : (
         <div
           ref={scrollRef}
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-8 py-6 font-mono scroll-smooth"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-4 py-5 font-mono scroll-smooth sm:px-8 sm:py-6"
         >
           {log.map((entry) => (
             <LogLine

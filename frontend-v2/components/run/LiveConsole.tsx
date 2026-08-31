@@ -27,11 +27,11 @@ export function LiveConsole({
 
   return (
     <section
-      className="mx-auto flex min-h-[calc(100vh-3.5rem)] w-full flex-col"
+      className="mx-auto flex w-full min-h-0 flex-col sm:min-h-[calc(100vh-3.5rem)]"
       style={{ maxWidth: TERMINAL_W, width: "100%" }}
     >
       <LiveTaskBar prompt={view.prompt} live={live} />
-      <div className="mt-6">
+      <div className="mt-4 sm:mt-6">
         <TransactionWindow
           view={view}
           store={store}

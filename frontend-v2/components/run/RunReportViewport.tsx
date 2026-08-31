@@ -149,7 +149,7 @@ function TransactionCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.65, ease, delay: 0.08 + index * 0.12 }}
-      className="relative z-10 flex h-full min-h-[380px] flex-col overflow-hidden rounded-[20px] border border-[#10B981]/20 bg-[#12141a] shadow-[0_4px_24px_rgba(0,0,0,0.3)]"
+      className="relative z-10 flex h-full min-h-[280px] flex-col overflow-hidden rounded-[20px] border border-[#10B981]/20 bg-[#12141a] shadow-[0_4px_24px_rgba(0,0,0,0.3)] sm:min-h-[380px] sm:rounded-[20px]"
     >
       <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
         <span className="rounded-full bg-[#10B981] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[#0A0B0D]">
@@ -290,7 +290,7 @@ function DocumentCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.65, ease, delay: 0.08 + index * 0.12 }}
-      className="flex h-full min-h-[380px] flex-col overflow-hidden rounded-[20px] border border-white/[0.08] bg-[#12141a]/80 shadow-[0_4px_24px_rgba(0,0,0,0.3)]"
+      className="flex h-full min-h-[280px] flex-col overflow-hidden rounded-[20px] border border-white/[0.08] bg-[#12141a]/80 shadow-[0_4px_24px_rgba(0,0,0,0.3)] sm:min-h-[380px]"
     >
       <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
         <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/35">

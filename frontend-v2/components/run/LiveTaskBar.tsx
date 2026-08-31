@@ -26,8 +26,8 @@ export function LiveTaskBar({ prompt, live }: LiveTaskBarProps) {
   }, [text]);
 
   return (
-    <div className="flex w-full items-center gap-3">
-      <p className="min-w-0 flex-1 truncate font-mono text-[13px] leading-none text-white/55">
+    <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+      <p className="min-w-0 flex-1 font-mono text-[12px] leading-snug text-white/55 sm:truncate sm:text-[13px] sm:leading-none">
         {live && (
           <>
             <span className="text-white/80">●</span>{" "}

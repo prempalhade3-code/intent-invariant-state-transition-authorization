@@ -47,7 +47,7 @@ export function ReportReadyHint({ visible, reportSectionId }: ReportReadyHintPro
   return (
     <AnimatePresence>
       {show && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-6 pb-10">
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] sm:px-6">
           <motion.button
             type="button"
             onClick={scrollToReport}
