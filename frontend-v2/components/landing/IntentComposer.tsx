@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -15,6 +15,8 @@ interface IntentComposerProps {
   error?: string | null;
   className?: string;
   variant?: "light" | "dark";
+  instant?: boolean;
+  buzz?: boolean;
 }
 
 export function IntentComposer({
@@ -26,6 +28,8 @@ export function IntentComposer({
   error,
   className,
   variant = "light",
+  instant,
+  buzz,
 }: IntentComposerProps) {
   const isDark = variant === "dark";
   const [value, setValue] = useState(DEFAULT_PROMPT);
@@ -42,16 +46,21 @@ export function IntentComposer({
 
   const canSubmit = value.trim().length > 0 && !loading;
 
+  useEffect(() => {
+    if (buzz) textareaRef.current?.focus();
+  }, [buzz]);
+
   return (
     <motion.div
-      className={cn("relative z-10 w-full mx-auto", className)}
-      initial={{ opacity: 0, y: 24 }}
+      className={cn("relative z-10 mx-auto w-full overflow-x-hidden", className)}
+      initial={instant ? false : { opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], delay: 1.05 }}
+      transition={instant ? { duration: 0 } : { duration: 0.75, ease: [0.22, 1, 0.36, 1], delay: 1.05 }}
     >
       <form onSubmit={handleSubmit} className="relative">
         <motion.div
           animate={{
+            x: buzz ? [0, -7, 7, -6, 6, -4, 4, -2, 2, 0] : 0,
             boxShadow: focused
               ? isDark
                 ? "0 16px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(16,185,129,0.45), 0 0 32px rgba(16,185,129,0.12)"
@@ -60,7 +69,10 @@ export function IntentComposer({
                 ? "0 8px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.08)"
                 : "0 2px 16px rgba(10,10,10,0.04)",
           }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          transition={{
+            x: buzz ? { duration: 0.55, ease: "easeInOut" } : { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+            boxShadow: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+          }}
           className={cn(
             "relative overflow-hidden rounded-[22px] border",
             isDark
