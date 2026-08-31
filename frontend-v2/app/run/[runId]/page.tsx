@@ -64,7 +64,7 @@ export default function RunPage({ params }: PageProps) {
           </div>
         )}
 
-        <div className="mx-auto px-6 pb-6 pt-10 sm:px-10">
+        <div className="mx-auto px-4 pb-6 pt-8 sm:px-10 sm:pt-10">
           <LiveConsole
             view={view}
             store={store}
