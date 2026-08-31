@@ -1,74 +1,38 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { LandingNav } from "@/components/landing/LandingNav";
-import { LabGrid } from "@/components/lab/LabGrid";
-import { useLiveRun } from "@/hooks/useLiveRun";
+import { IncidentGrid } from "@/components/lab/IncidentGrid";
 
 const reveal = { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const };
 
 export default function LabPage() {
-  const { phase, view, activeAttack, startAutonomous, startScenario, reset } = useLiveRun();
-
-  const handleAutonomous = async (prompt: string, demoEvent: string, id: string) => {
-    await startAutonomous(prompt, demoEvent, id, false);
-  };
-
-  const handleScenario = async (scenario: string, id: string) => {
-    await startScenario(scenario, id);
-  };
-
-  const handleReset = async () => {
-    await reset();
-  };
-
-  const blocked = view.authorized === false;
-  const busy = phase === "submitting" || phase === "live";
-
   return (
-    <div className="min-h-screen bg-paper text-ink">
+    <div className="min-h-screen bg-[#0A0B0D] text-[#F4F5F7]">
       <LandingNav />
 
-      <main className="mx-auto w-full max-w-[1000px] px-5 pb-24 pt-28 sm:px-8">
+      <main className="mx-auto w-full max-w-[1280px] px-4 pb-20 pt-[calc(3.5rem+env(safe-area-inset-top))] sm:px-8 sm:pb-20 lg:px-10">
         <motion.div
-          className="mb-14 max-w-[640px]"
+          className="mb-10 max-w-[720px]"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={reveal}
         >
-          <Link
-            href="/"
-            className="mb-6 inline-block font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint transition-colors hover:text-ink"
-          >
-            ← Home
-          </Link>
-          <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.14em] text-white/35">
             Incident Lab
           </p>
-          <h1 className="text-[32px] font-medium leading-[1.1] tracking-[-0.045em] text-ink sm:text-[40px]">
-            Break the assumptions
+          <h1 className="text-[32px] font-medium leading-[1.08] tracking-[-0.045em] text-[#F4F5F7] sm:text-[44px]">
+            Break the agent.
+            <br />
+            The money won&apos;t move.
           </h1>
-          <p className="mt-4 text-[16px] font-normal leading-[1.6] tracking-[-0.01em] text-ink-muted">
-            Six hostile conditions. One invariant — payment cannot settle outside the user&apos;s word.
+          <p className="mt-4 max-w-[580px] text-[16px] font-normal leading-[1.65] tracking-[-0.01em] text-white/50">
+            Six live attacks against an autonomous purchasing agent. In every one, Sworn lets the agent act and refuses to let the action become a real transaction.
           </p>
         </motion.div>
 
-        <LabGrid
-          onAutonomous={handleAutonomous}
-          onScenario={handleScenario}
-          activeId={activeAttack}
-          phase={phase}
-          view={phase !== "idle" ? view : undefined}
-          onReset={handleReset}
-          blocked={blocked}
-          busy={busy}
-        />
+        <IncidentGrid />
       </main>
-
-      <footer className="border-t border-border/60 px-6 py-10 text-center">
-        <p className="font-mono text-[10px] tracking-wide text-ink-faint">Sworn</p>
-      </footer>
     </div>
   );
 }
