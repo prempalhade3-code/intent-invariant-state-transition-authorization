@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { LandingNav } from "@/components/landing/LandingNav";
@@ -16,6 +16,7 @@ import { LandingFAQ } from "@/components/landing/LandingFAQ";
 import { LandingWordmark } from "@/components/landing/LandingWordmark";
 import { HeroSealFeed } from "@/components/landing/HeroSealFeed";
 import { createRun } from "@/lib/api";
+import { TRY_IT_EVENT } from "@/lib/tryIt";
 import type { Phase } from "@/lib/types";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -27,7 +28,55 @@ export default function LandingPage() {
   const [launching, setLaunching] = useState(false);
   const [sealArmed, setSealArmed] = useState(false);
   const [sealStamping, setSealStamping] = useState(false);
+  const [composerBuzz, setComposerBuzz] = useState(false);
   const busy = phase === "submitting" || launching;
+
+  const runTryItBuzz = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.setTimeout(() => {
+      setComposerBuzz(true);
+      window.setTimeout(() => setComposerBuzz(false), 700);
+    }, 350);
+  }, []);
+
+  useEffect(() => {
+    const onTryIt = () => runTryItBuzz();
+    window.addEventListener(TRY_IT_EVENT, onTryIt);
+    return () => window.removeEventListener(TRY_IT_EVENT, onTryIt);
+  }, [runTryItBuzz]);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("try") !== "1") return;
+    window.history.replaceState({}, "", "/");
+    window.setTimeout(() => runTryItBuzz(), 100);
+  }, [runTryItBuzz]);
+
+  useEffect(() => {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+
+    const resetScroll = (event?: PageTransitionEvent) => {
+      if (event?.persisted) return;
+
+      const hash = window.location.hash;
+      if (hash) {
+        document.querySelector(hash)?.scrollIntoView({ behavior: "auto" });
+      } else {
+        window.scrollTo(0, 0);
+      }
+    };
+
+    resetScroll();
+    window.addEventListener("pageshow", resetScroll);
+
+    return () => {
+      window.removeEventListener("pageshow", resetScroll);
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "auto";
+      }
+    };
+  }, []);
 
   const handleAutonomous = async (prompt: string) => {
     setError(null);
@@ -48,11 +97,11 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#0A0B0D] text-[#F4F5F7]">
       <LandingNav />
 
-      {/* Hero — exactly one viewport */}
-      <section className="relative h-[100dvh] min-h-[640px] overflow-hidden bg-[#0A0B0D]">
+      {/* Hero — one viewport on desktop; scrollable on small phones */}
+      <section className="relative min-h-[100dvh] overflow-x-hidden bg-[#0A0B0D] pb-8 sm:h-[100dvh] sm:min-h-[640px] sm:overflow-hidden sm:pb-0">
         <HeroVisual armed={sealArmed} stamping={sealStamping} />
 
-        <div className="relative z-10 mx-auto flex h-full w-full max-w-[900px] flex-col items-center px-5 pt-[216px] sm:px-8 sm:pt-[224px]">
+        <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[900px] flex-col items-center px-4 pt-[7.5rem] sm:min-h-0 sm:h-full sm:px-8 sm:pt-[224px]">
           <motion.div
             className="mb-4 text-center"
             initial={{ opacity: 0, y: 8 }}
@@ -73,7 +122,7 @@ export default function LandingPage() {
             One seal for intent, merchant proof and settlement.
           </motion.p>
 
-          <div id="try" className="mx-auto mt-9 w-full max-w-[540px] scroll-mt-28 sm:mt-10">
+          <div id="try" className="mx-auto mt-6 w-full max-w-[540px] scroll-mt-24 sm:mt-10 sm:scroll-mt-28">
             <IntentComposer
               onSubmit={(prompt) => handleAutonomous(prompt)}
               onFocusChange={setSealArmed}
@@ -87,6 +136,7 @@ export default function LandingPage() {
               }
               error={error}
               variant="dark"
+              buzz={composerBuzz}
             />
           </div>
 
