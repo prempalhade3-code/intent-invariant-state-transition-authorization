@@ -7,7 +7,7 @@ export function AnimatedHeadline({ dark = false }: { dark?: boolean }) {
   return (
     <motion.h1
       className={cn(
-        "whitespace-nowrap text-center text-[clamp(24px,2.75vw,36px)] font-medium leading-[1.1] tracking-[-0.03em]",
+        "text-center text-[clamp(22px,6vw,36px)] font-medium leading-[1.12] tracking-[-0.03em] sm:whitespace-nowrap sm:leading-[1.1]",
         dark ? "text-[#F4F5F7]" : "text-ink",
       )}
       initial={{ opacity: 0, y: 12 }}

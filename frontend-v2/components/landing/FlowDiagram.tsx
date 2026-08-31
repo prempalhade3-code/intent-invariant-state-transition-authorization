@@ -11,7 +11,7 @@ const OUTPUTS = ["Sealed intent", "Merchant proof", "Oracle price", "Independent
 export function FlowDiagram() {
   return (
     <motion.section
-      className="mx-auto w-full max-w-[960px] px-5 py-24 sm:px-8"
+      className="mx-auto w-full max-w-[960px] px-4 py-16 sm:px-8 sm:py-24"
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}

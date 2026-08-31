@@ -43,14 +43,14 @@ export function HeroSealFeed({ armed = false, stamping = false }: HeroSealFeedPr
 
   return (
     <motion.div
-      className="mt-auto w-full max-w-[540px] pb-7 pt-6 sm:pb-8"
+      className="mt-auto w-full max-w-[540px] pb-5 pt-4 sm:pb-8 sm:pt-6"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.75, ease, delay: 1.2 }}
     >
       {/* stats strip */}
-      <div className="mb-3 flex items-center justify-between py-2.5">
-        <div className="flex items-center gap-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 py-2.5">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:gap-4">
           <span className="flex items-center gap-1.5 font-mono text-[10px] text-white/35">
             <span
               className={`h-1.5 w-1.5 rounded-full ${armed ? "animate-pulse bg-[#10B981]" : "bg-[#10B981]/60"}`}

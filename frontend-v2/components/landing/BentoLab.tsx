@@ -89,7 +89,7 @@ function IncidentCard({ attack, index }: { attack: Attack; index: number }) {
                 <p className="mt-1 text-[13px] text-white/50">{attack.subtitle}</p>
                 <p className="mt-4 text-[14px] leading-[1.6] text-white/45">{attack.whatBreaks}</p>
 
-                <div className="mt-6 flex items-center gap-3">
+                <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                   <Link
                     href="/lab"
                     className="rounded-full bg-[#10B981] px-5 py-2.5 text-[13px] font-medium text-[#0A0B0D] transition-all hover:bg-[#0ea472] active:scale-[0.97]"
@@ -118,7 +118,7 @@ export function BentoLab() {
 
   return (
     <motion.section
-      className="mx-auto w-full max-w-[960px] px-5 py-24 sm:px-8"
+      className="mx-auto w-full max-w-[960px] px-4 py-16 sm:px-8 sm:py-24"
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
@@ -141,7 +141,7 @@ export function BentoLab() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 md:grid-cols-4">
         {featured.map((attack, i) => (
           <IncidentCard key={attack.id} attack={attack} index={i} />
         ))}
