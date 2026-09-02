@@ -135,10 +135,19 @@ async def run(body: Run):
 
         search_result = await browser.call("search_products", query="VPS")
         products = search_result["output"]["products"]
-        chosen = next((p for p in products if p["id"] == "vps-basic"), products[0] if products else {"id": "vps-basic", "price": 20})
+        premium = next((p for p in products if p["id"] == "vps-premium"), None)
+        if premium:
+            chosen = premium
+            content_influenced = True
+        else:
+            chosen = next(
+                (p for p in products if p["id"] == "vps-basic"),
+                products[0] if products else {"id": "vps-basic", "price": 20},
+            )
+            content_influenced = False
 
         await emit_tool(body.run_id, "search_products", search_result["output"], domain)
-        await emit(body.run_id, "agent_decision", {"selected_product": chosen["id"], "content_influenced": False})
+        await emit(body.run_id, "agent_decision", {"selected_product": chosen["id"], "content_influenced": content_influenced})
         state["graph"].append("search_products", {"query": "VPS"}, {"product_id": chosen["id"], "price": chosen["price"]}, domain)
 
         detail = await browser.call("view_product", product_id=chosen["id"])

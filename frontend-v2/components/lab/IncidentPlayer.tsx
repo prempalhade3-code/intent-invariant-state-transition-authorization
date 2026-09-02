@@ -138,9 +138,9 @@ export function IncidentPlayer({
                   Sealed policy
                 </p>
                 <div className="flex flex-col gap-3 sm:min-h-0 sm:flex-1 sm:gap-4">
-                  <HighlightPulse variant="green" className="w-full shrink-0">
-                    <div className="rounded-xl border border-[#10B981]/20 bg-[#10B981]/5 px-3 py-3 sm:px-4">
-                      <p className="font-mono text-[10px] uppercase tracking-wide text-[#10B981]">
+                  <HighlightPulse variant="red" className="w-full shrink-0">
+                    <div className="rounded-xl border border-red-500/20 bg-red-500/5 px-3 py-3 sm:px-4">
+                      <p className="font-mono text-[10px] uppercase tracking-wide text-red-400">
                         Protected invariant
                       </p>
                       <p className="mt-1 text-[16px] font-medium leading-snug text-[#F4F5F7] sm:text-[17px]">
@@ -162,7 +162,7 @@ export function IncidentPlayer({
                         <p
                           className={cn(
                             "mt-1 text-[13px]",
-                            field.highlight ? "font-medium text-[#10B981]" : "text-white/60",
+                            field.highlight ? "font-medium text-red-400" : "text-white/60",
                           )}
                         >
                           {field.value}
@@ -218,7 +218,7 @@ export function IncidentPlayer({
                           </HighlightPulse>
                         ) : (
                           <div className="flex items-start gap-3 rounded-lg px-2 py-2 sm:px-3 sm:py-2.5">
-                            <span className="mt-0.5 font-mono text-[10px] text-[#10B981]">✓</span>
+                            <span className="mt-0.5 font-mono text-[10px] text-white/45">✓</span>
                             <div>
                               <p className="text-[14px] font-medium text-[#F4F5F7]">{step.label}</p>
                               {step.detail && (
@@ -248,8 +248,8 @@ export function IncidentPlayer({
                   {running && !stepsDone && (
                     <div className="flex items-center gap-2 px-3 py-2">
                       <span className="relative flex h-2 w-2">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#10B981] opacity-40" />
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-[#10B981]" />
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-40" />
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
                       </span>
                       <span className="text-[13px] text-white/35">Agent running</span>
                     </div>
@@ -312,9 +312,9 @@ export function IncidentPlayer({
                       ].map((stat) => (
                         <div key={stat.label}>
                           {stat.highlight ? (
-                            <HighlightPulse variant="green" rounded="lg">
-                              <div className="rounded-lg border border-[#10B981]/20 bg-[#10B981]/5 px-3 py-4 text-center">
-                                <p className="text-[18px] font-medium text-[#10B981]">{stat.value}</p>
+                            <HighlightPulse variant="red" rounded="lg">
+                              <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-4 text-center">
+                                <p className="text-[18px] font-medium text-red-400">{stat.value}</p>
                                 <p className="mt-1 font-mono text-[9px] uppercase tracking-wide text-white/35">
                                   {stat.label}
                                 </p>
@@ -338,7 +338,7 @@ export function IncidentPlayer({
                     <button
                       type="button"
                       onClick={onReplay}
-                      className="shrink-0 rounded-full bg-[#10B981] px-4 py-2 text-[13px] font-medium text-[#0A0B0D] transition-all hover:bg-[#0ea472] active:scale-[0.97]"
+                      className="shrink-0 rounded-full border border-white/[0.12] bg-[#161820] px-4 py-2 text-[13px] font-medium text-white/80 transition-all hover:border-white/20 hover:text-white active:scale-[0.97]"
                     >
                       Replay
                     </button>

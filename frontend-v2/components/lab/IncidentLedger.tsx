@@ -17,8 +17,8 @@ interface IncidentLedgerProps {
 function CheckIcon({ state }: { state: VerificationCheck["state"] }) {
   if (state === "ok") {
     return (
-      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#10B981]/30 bg-[#10B981]/10">
-        <Check className="h-3 w-3 text-[#10B981]" />
+      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04]">
+        <Check className="h-3 w-3 text-white/50" />
       </div>
     );
   }
