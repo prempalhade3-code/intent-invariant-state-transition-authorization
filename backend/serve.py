@@ -1,4 +1,4 @@
-"""Production entrypoint for Render: internal services + public reverse proxy on $PORT."""
+"""Production entrypoint: internal services + public reverse proxy on $PORT."""
 from __future__ import annotations
 
 import asyncio
