@@ -2,16 +2,14 @@
 __pycache__/
 *.py[cod]
 .venv/
+.pytest_cache/
 
-# Node / Vite
-frontend/node_modules/
-frontend/dist/
-frontend/*.tsbuildinfo
-frontend/vite.config.js
-frontend/vite.config.d.ts
+# macOS
+.DS_Store
 
-# Frontend v2 generated files
+# Node / Next.js
 frontend-v2/node_modules/
 frontend-v2/.next/
 frontend-v2/out/
 frontend-v2/*.tsbuildinfo
+frontend-v2/.vercel/
