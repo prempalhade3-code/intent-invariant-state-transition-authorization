@@ -271,15 +271,3 @@ Public demo: [sworn-enclave.vercel.app](https://sworn-enclave.vercel.app). Cold 
 ## safety boundary
 
 Sworn is a prototype. It does not move real money. Mock-store settlement is for evaluation only. DAE and merchant keys on the public demo are ephemeral.
-
-## apply
-
-| Field | Value |
-|-------|-------|
-| Track | 05 · Open Track |
-| Project | Sworn |
-| Repo | this repository (public, open source) |
-| Live | https://sworn-enclave.vercel.app |
-| What broke | Production store API routing (see above) |
-
-[Razorpay AI Buildathon · Apply](https://razorpay.com/buildathon)
