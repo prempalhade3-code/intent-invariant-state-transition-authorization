@@ -396,8 +396,8 @@ def checkout_page(run: str | None = Query(None)):
 
 @app.get("/orders", response_class=HTMLResponse)
 def orders_page(run: str | None = Query(None)):
-    # Always show full order history — ignore ?run= (cart/checkout use run scoping, orders do not)
-    items = list(orders.values())
+    # Include paid pending orders so the store reflects settlement before UI finalize.
+    items = list(orders.values()) + list(pending_orders.values())
     return store_ui.render_orders(items, PRODUCTS)
 
 

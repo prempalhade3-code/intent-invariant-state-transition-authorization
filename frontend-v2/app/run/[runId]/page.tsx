@@ -29,7 +29,7 @@ export default function RunPage({ params }: PageProps) {
   useEffect(() => {
     if (
       finalizedRef.current ||
-      !isComplete ||
+      phase !== "settled" ||
       view.authorized !== true ||
       !view.payment
     ) {
@@ -41,7 +41,7 @@ export default function RunPage({ params }: PageProps) {
       .catch(() => {
         finalizedRef.current = false;
       });
-  }, [isComplete, runId, view.authorized, view.payment, pollStore]);
+  }, [phase, runId, view.authorized, view.payment, pollStore]);
 
   const showReport =
     view.authorized === true &&
