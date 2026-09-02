@@ -90,8 +90,15 @@ async def _forward(request: Request, upstream: str) -> Response:
     )
 
 
+def _is_gateway_path(path: str) -> bool:
+    if path == "/health":
+        return True
+    if path in ("/api/run", "/api/intent"):
+        return True
+    return path.startswith("/api/runs")
+
+
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"])
 async def proxy(path: str, request: Request) -> Response:
-    if request.url.path.startswith("/api") or request.url.path == "/health":
-        return await _forward(request, GATEWAY)
-    return await _forward(request, STORE)
+    upstream = GATEWAY if _is_gateway_path(request.url.path) else STORE
+    return await _forward(request, upstream)

@@ -82,6 +82,27 @@ def _invoice_for_run(run_id: str | None) -> dict[str, Any] | None:
     return invoices.get(inv_id) if inv_id else None
 
 
+def _lookup_order(order_id: str) -> dict[str, Any] | None:
+    if order_id in orders:
+        return orders[order_id]
+    for pending in pending_orders.values():
+        if pending.get("order_id") == order_id:
+            return pending
+    return None
+
+
+def _all_orders() -> list[dict[str, Any]]:
+    seen: set[str] = set()
+    items: list[dict[str, Any]] = []
+    for order in orders.values():
+        seen.add(order["order_id"])
+        items.append(order)
+    for order in pending_orders.values():
+        if order["order_id"] not in seen:
+            items.append(order)
+    return items
+
+
 class Checkout(BaseModel):
     product_id: str
     override_price: int | None = None
@@ -220,7 +241,7 @@ def invoice_api(invoice_id: str):
 
 @app.get("/api/orders")
 def orders_api(run_id: str | None = None):
-    items = list(orders.values())
+    items = _all_orders()
     if run_id:
         items = [o for o in items if o.get("run_id") == run_id]
     items.sort(key=lambda o: o.get("created_at") or "", reverse=True)
@@ -229,9 +250,9 @@ def orders_api(run_id: str | None = None):
 
 @app.get("/api/order/{order_id}")
 def order_api(order_id: str):
-    if order_id not in orders:
+    order = _lookup_order(order_id)
+    if order is None:
         raise HTTPException(404, "unknown order")
-    order = orders[order_id]
     inv = invoices.get(order.get("invoice_id", ""))
     return {"order": order, "invoice": inv}
 
@@ -299,18 +320,16 @@ def payment(body: Payment):
             "fulfillment": "provisioning",
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
+        orders[order_id] = order
         if run_id:
-            pending_orders[run_id] = order
-        else:
-            orders[order_id] = order
-            for p in PRODUCTS:
-                if p["id"] == inv["product_id"] and p["inventory"] > 0:
-                    p["inventory"] -= 1
+            pending_orders.pop(run_id, None)
+            carts.pop(run_id, None)
+        for p in PRODUCTS:
+            if p["id"] == inv["product_id"] and p["inventory"] > 0:
+                p["inventory"] -= 1
         result["order_id"] = order_id
         result["invoice_id"] = inv_id
         result["run_id"] = run_id
-        if run_id:
-            carts.pop(run_id, None)
 
     return result
 
@@ -396,16 +415,14 @@ def checkout_page(run: str | None = Query(None)):
 
 @app.get("/orders", response_class=HTMLResponse)
 def orders_page(run: str | None = Query(None)):
-    # Include paid pending orders so the store reflects settlement before UI finalize.
-    items = list(orders.values()) + list(pending_orders.values())
-    return store_ui.render_orders(items, PRODUCTS)
+    return store_ui.render_orders(_all_orders(), PRODUCTS)
 
 
 @app.get("/order/{order_id}", response_class=HTMLResponse)
 def order_page(order_id: str):
-    if order_id not in orders:
+    order = _lookup_order(order_id)
+    if order is None:
         raise HTTPException(404, "unknown order")
-    order = orders[order_id]
     prod = next((p for p in PRODUCTS if p["id"] == order["product_id"]), None)
     inv = invoices.get(order.get("invoice_id", ""))
     return store_ui.render_order(order, prod, inv)
