@@ -6,10 +6,12 @@ import re
 import uuid
 from datetime import datetime, timezone
 from .crypto import canonical, sha256
+from .agent import Run as AgentRun, run as execute_agent_run
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 app = FastAPI(title="IISTA API Gateway")
+BUILD_ID = "6388565-direct-agent"
 AGENT_URL = os.environ.get("IISTA_AGENT_URL", "http://127.0.0.1:8001")
 DAE_URL = os.environ.get("IISTA_DAE_URL", "http://127.0.0.1:8002")
 STORE_URL = os.environ.get("IISTA_STORE_URL", "http://127.0.0.1:8000")
@@ -40,16 +42,12 @@ def _hash_event(previous: str, event: dict) -> dict:
 
 @app.get("/health")
 def health():
-    return {"service": "iista-gateway", "status": "ok"}
+    return {"service": "iista-gateway", "status": "ok", "build": BUILD_ID}
 
 
 @app.post("/api/run")
 async def run(body: RunRequest):
-    async with httpx.AsyncClient(timeout=10) as c:
-        r = await c.post(f"{AGENT_URL}/run", json=body.model_dump())
-    if r.status_code >= 500:
-        raise HTTPException(502, "agent unavailable")
-    return r.json()
+    return await execute_agent_run(AgentRun(**body.model_dump()))
 
 
 def _policy(prompt: str) -> dict:
@@ -159,22 +157,20 @@ async def _execute_run(run_id: str):
     item = RUNS[run_id]
     if item.get("status") == "cancelled":
         return
-    async with httpx.AsyncClient(timeout=120) as c:
-        try:
-            r = await c.post(f"{AGENT_URL}/run", json={
-                "scenario": "standard",
-                "budget": item["policy"]["budget_max"],
-                "domain": "mockstore.local",
-                "user_prompt": item["events"][0]["payload"]["prompt"],
-                "run_id": run_id,
-                "session_id": item.get("session_id"),
-            })
-            result = r.json()
-            item["result"] = result
-            item["status"] = "completed" if result.get("authorized") else "blocked"
-        except Exception as exc:
-            item["status"] = "error"
-            item["result"] = {"authorized": False, "reason": str(exc)}
+    try:
+        result = await execute_agent_run(AgentRun(
+            scenario="standard",
+            budget=item["policy"]["budget_max"],
+            domain="mockstore.local",
+            user_prompt=item["events"][0]["payload"]["prompt"],
+            run_id=run_id,
+            session_id=item.get("session_id"),
+        ))
+        item["result"] = result
+        item["status"] = "completed" if result.get("authorized") else "blocked"
+    except Exception as exc:
+        item["status"] = "error"
+        item["result"] = {"authorized": False, "reason": str(exc)}
 
 
 @app.get("/api/runs/{run_id}")
