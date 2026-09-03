@@ -5,6 +5,7 @@ import type {
   RunRecord,
   RunResult,
 } from "./types";
+import { getBrowserSessionId, rememberRun } from "./session";
 
 // ─── HTTP helper ──────────────────────────────────────────────────────────────
 
@@ -38,15 +39,19 @@ export async function createRun(
   userPrompt: string,
   demoEvent?: string | null,
 ): Promise<CreateRunResponse> {
-  return request<CreateRunResponse>("/api/runs", {
+  const session_id = getBrowserSessionId();
+  const res = await request<CreateRunResponse>("/api/runs", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
       user_prompt: userPrompt,
       mode: "autonomous",
       demo_event: demoEvent || undefined,
+      session_id,
     }),
   });
+  rememberRun(res.run_id);
+  return res;
 }
 
 export async function startRun(runId: string): Promise<{ run_id: string; status: string }> {
@@ -143,8 +148,11 @@ export async function fetchCheckoutByRun(runId: string): Promise<{
 }
 
 export async function fetchOrders(runId?: string): Promise<{ orders: import("./types").OrderData[] }> {
-  const url = runId ? `/store/api/orders?run_id=${encodeURIComponent(runId)}` : "/store/api/orders";
-  return request(url);
+  if (runId) {
+    return request(`/store/api/orders?run_id=${encodeURIComponent(runId)}`);
+  }
+  const sessionId = getBrowserSessionId();
+  return request(`/store/api/orders?session_id=${encodeURIComponent(sessionId)}`);
 }
 
 export async function fetchOrder(orderId: string): Promise<{

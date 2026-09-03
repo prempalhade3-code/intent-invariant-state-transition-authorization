@@ -2,7 +2,6 @@
 import os
 import asyncio
 import httpx
-from langgraph.graph import END, StateGraph
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from cryptography.hazmat.primitives import serialization
@@ -16,6 +15,32 @@ GATEWAY_URL = os.getenv("IISTA_GATEWAY_URL", "http://127.0.0.1:8003")
 raw = os.environ.get("IISTA_AGENT_PRIVATE_KEY")
 KEY = serialization.load_pem_private_key(raw.encode(), password=None) if raw else make_key()
 
+AGENT_GRAPH = None
+
+
+def _agent_graph():
+    global AGENT_GRAPH
+    if AGENT_GRAPH is None:
+        from langgraph.graph import END, StateGraph
+
+        workflow = StateGraph(dict)
+        for name, fn in [
+            ("search", search),
+            ("path_attack", path_attack),
+            ("checkout", checkout),
+            ("authorize", authorize),
+            ("pay", pay),
+        ]:
+            workflow.add_node(name, fn)
+        workflow.set_entry_point("search")
+        workflow.add_edge("search", "path_attack")
+        workflow.add_edge("path_attack", "checkout")
+        workflow.add_edge("checkout", "authorize")
+        workflow.add_edge("authorize", "pay")
+        workflow.add_edge("pay", END)
+        AGENT_GRAPH = workflow.compile()
+    return AGENT_GRAPH
+
 
 class Run(BaseModel):
     scenario: str = "standard"
@@ -23,6 +48,7 @@ class Run(BaseModel):
     domain: str = "mockstore.local"
     user_prompt: str | None = None
     run_id: str | None = None
+    session_id: str | None = None
 
 
 async def emit(run_id: str, event_type: str, payload: dict, source: str = "agent"):
@@ -47,6 +73,11 @@ async def emit_tool(run_id: str, tool: str, output: dict, domain: str = "mocksto
 @app.get("/attestation")
 def attestation():
     return {"public_key": public_pem(KEY)}
+
+
+@app.get("/health")
+def health():
+    return {"service": "iista-agent", "status": "ok"}
 
 
 async def search(state):
@@ -106,18 +137,6 @@ async def pay(state):
     return state
 
 
-workflow = StateGraph(dict)
-for name, fn in [("search", search), ("path_attack", path_attack), ("checkout", checkout), ("authorize", authorize), ("pay", pay)]:
-    workflow.add_node(name, fn)
-workflow.set_entry_point("search")
-workflow.add_edge("search", "path_attack")
-workflow.add_edge("path_attack", "checkout")
-workflow.add_edge("checkout", "authorize")
-workflow.add_edge("authorize", "pay")
-workflow.add_edge("pay", END)
-AGENT_GRAPH = workflow.compile()
-
-
 @app.post("/run")
 async def run(body: Run):
     if body.scenario not in {"standard", "injection", "toctou", "deviation", "tampered", "merchant_substitution", "unauthorized_signing"}:
@@ -125,7 +144,7 @@ async def run(body: Run):
 
     if body.user_prompt and body.run_id:
         state = {"body": body, "graph": ExecutionGraph(KEY), "authorized": False}
-        browser = BrowserController(body.run_id)
+        browser = BrowserController(body.run_id, body.session_id)
         domain = body.domain
 
         await emit(body.run_id, "agent_plan_created", {
@@ -210,7 +229,7 @@ async def run(body: Run):
         await emit(body.run_id, "run_finished", {"authorized": True})
         return {"authorized": True, "scenario": "natural", "payment": state["payment"], "graph": state["graph"].serialise(), "ssi": state["authorization"]["ssi"]}
 
-    state = await AGENT_GRAPH.ainvoke({"body": body, "graph": ExecutionGraph(KEY)})
+    state = await _agent_graph().ainvoke({"body": body, "graph": ExecutionGraph(KEY)})
     if not state["authorized"]:
         return {"authorized": False, "scenario": body.scenario, "reason": state["authorization"].get("detail"), "graph": state["graph"].serialise()}
     return {"authorized": True, "scenario": body.scenario, "payment": state["payment"], "graph": state["graph"].serialise(), "ssi": state["authorization"]["ssi"]}

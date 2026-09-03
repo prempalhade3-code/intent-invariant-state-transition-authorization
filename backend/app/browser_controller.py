@@ -12,8 +12,15 @@ STORE_URL = os.getenv("IISTA_STORE_URL", "http://127.0.0.1:8000")
 TOOLS = {"search_products", "view_product", "add_to_cart", "checkout", "read_invoice"}
 
 class BrowserController:
-    def __init__(self, run_id: str): self.run_id = run_id; self.mode = "http-fallback"; self._pw = self._browser = self._page = None
+    def __init__(self, run_id: str, session_id: str | None = None):
+        self.run_id = run_id
+        self.session_id = session_id
+        self.mode = "http-fallback"
+        self._pw = self._browser = self._page = None
     async def start(self):
+        if os.getenv("IISTA_DISABLE_PLAYWRIGHT", "").lower() in {"1", "true", "yes"}:
+            self.mode = "http-fallback"
+            return
         try:
             from playwright.async_api import async_playwright
             self._pw = await async_playwright().start(); self._browser = await self._pw.chromium.launch(headless=True)
@@ -44,7 +51,13 @@ class BrowserController:
                 async with httpx.AsyncClient(timeout=5) as c: r = await c.post(f"{STORE_URL}/cart/{self.run_id}", json={"product_id": params["product_id"], "quantity": 1}); r.raise_for_status(); output = r.json()
             elif tool == "checkout":
                 await self._page.goto(STORE_URL + "/checkout")
-                async with httpx.AsyncClient(timeout=5) as c: r = await c.post(f"{STORE_URL}/checkout", json={"product_id": params["product_id"], "run_id": self.run_id}); r.raise_for_status(); output = r.json()
+                payload = {"product_id": params["product_id"], "run_id": self.run_id}
+                if self.session_id:
+                    payload["session_id"] = self.session_id
+                async with httpx.AsyncClient(timeout=5) as c:
+                    r = await c.post(f"{STORE_URL}/checkout", json=payload)
+                    r.raise_for_status()
+                    output = r.json()
             else:
                 async with httpx.AsyncClient(timeout=5) as c: r = await c.get(f"{STORE_URL}/api/invoice/{params['invoice_id']}"); r.raise_for_status(); output = r.json()
             return {"tool": tool, "domain": ALLOWED_DOMAIN, "url": self._page.url, "output": output}
@@ -52,6 +65,10 @@ class BrowserController:
             if tool == "search_products": r = await c.get(f"{STORE_URL}/products", params={"query": params.get("query", "VPS"), "run_id": self.run_id})
             elif tool == "view_product": r = await c.get(f"{STORE_URL}/products/{params['product_id']}")
             elif tool == "add_to_cart": r = await c.post(f"{STORE_URL}/cart/{self.run_id}", json={"product_id": params["product_id"], "quantity": 1})
-            elif tool == "checkout": r = await c.post(f"{STORE_URL}/checkout", json={"product_id": params["product_id"], "run_id": self.run_id})
+            elif tool == "checkout":
+                payload = {"product_id": params["product_id"], "run_id": self.run_id}
+                if self.session_id:
+                    payload["session_id"] = self.session_id
+                r = await c.post(f"{STORE_URL}/checkout", json=payload)
             else: r = await c.get(f"{STORE_URL}/api/invoice/{params['invoice_id']}")
             r.raise_for_status(); return {"tool": tool, "domain": ALLOWED_DOMAIN, "url": str(r.url), "output": r.json()}

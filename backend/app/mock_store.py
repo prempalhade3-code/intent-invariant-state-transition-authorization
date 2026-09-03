@@ -1,5 +1,5 @@
 """Mock merchant store issuing signed invoice witnesses and oracle confirmations."""
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Cookie, FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -60,6 +60,21 @@ payment_ledger: list[dict[str, Any]] = []
 run_checkouts: dict[str, str] = {}  # run_id -> checkout_id
 
 active_run_id: str | None = None
+SESSION_COOKIE = "sworn_session"
+
+
+def _resolve_session(session_id: str | None, cookie: str | None) -> str | None:
+    return session_id or cookie
+
+
+def _orders_for_view(session_id: str | None, cookie: str | None, run_id: str | None = None) -> list[dict[str, Any]]:
+    items = _all_orders()
+    if run_id:
+        return [o for o in items if o.get("run_id") == run_id]
+    session = _resolve_session(session_id, cookie)
+    if not session:
+        return []
+    return [o for o in items if o.get("session_id") == session]
 
 
 def _resolve_run(run: str | None) -> str | None:
@@ -107,6 +122,7 @@ class Checkout(BaseModel):
     product_id: str
     override_price: int | None = None
     run_id: str | None = None
+    session_id: str | None = None
 
 
 class Payment(BaseModel):
@@ -196,6 +212,7 @@ def checkout_api(body: Checkout):
         "domain": item["domain"],
         "merchant_id": item["merchant_id"],
         "run_id": body.run_id,
+        "session_id": body.session_id,
     }
     proof = {
         "invoice": invoice,
@@ -240,18 +257,24 @@ def invoice_api(invoice_id: str):
 
 
 @app.get("/api/orders")
-def orders_api(run_id: str | None = None):
-    items = _all_orders()
-    if run_id:
-        items = [o for o in items if o.get("run_id") == run_id]
+def orders_api(
+    run_id: str | None = None,
+    session_id: str | None = None,
+    sworn_session: str | None = Cookie(None),
+):
+    items = _orders_for_view(session_id, sworn_session, run_id)
     items.sort(key=lambda o: o.get("created_at") or "", reverse=True)
     return {"orders": items}
 
 
 @app.get("/api/order/{order_id}")
-def order_api(order_id: str):
+def order_api(order_id: str, sworn_session: str | None = Cookie(None), session_id: str | None = None):
     order = _lookup_order(order_id)
     if order is None:
+        raise HTTPException(404, "unknown order")
+    session = _resolve_session(session_id, sworn_session)
+    order_session = order.get("session_id")
+    if order_session and session != order_session:
         raise HTTPException(404, "unknown order")
     inv = invoices.get(order.get("invoice_id", ""))
     return {"order": order, "invoice": inv}
@@ -317,6 +340,7 @@ def payment(body: Payment):
             "transaction_id": tx_id,
             "invoice_id": inv_id,
             "run_id": run_id,
+            "session_id": inv.get("session_id"),
             "fulfillment": "provisioning",
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
@@ -414,14 +438,18 @@ def checkout_page(run: str | None = Query(None)):
 
 
 @app.get("/orders", response_class=HTMLResponse)
-def orders_page(run: str | None = Query(None)):
-    return store_ui.render_orders(_all_orders(), PRODUCTS)
+def orders_page(sworn_session: str | None = Cookie(None)):
+    return store_ui.render_orders(_orders_for_view(None, sworn_session), PRODUCTS)
 
 
 @app.get("/order/{order_id}", response_class=HTMLResponse)
-def order_page(order_id: str):
+def order_page(order_id: str, sworn_session: str | None = Cookie(None)):
     order = _lookup_order(order_id)
     if order is None:
+        raise HTTPException(404, "unknown order")
+    session = sworn_session
+    order_session = order.get("session_id")
+    if order_session and session != order_session:
         raise HTTPException(404, "unknown order")
     prod = next((p for p in PRODUCTS if p["id"] == order["product_id"]), None)
     inv = invoices.get(order.get("invoice_id", ""))

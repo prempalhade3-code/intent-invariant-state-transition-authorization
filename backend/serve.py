@@ -15,6 +15,8 @@ from fastapi.responses import Response
 ROOT = os.path.dirname(os.path.abspath(__file__))
 GATEWAY = "http://127.0.0.1:8003"
 STORE = "http://127.0.0.1:8000"
+AGENT = "http://127.0.0.1:8001"
+DAE = "http://127.0.0.1:8002"
 
 _process: subprocess.Popen | None = None
 
@@ -33,28 +35,53 @@ HOP_BY_HOP = {
 
 
 async def _wait_for_services() -> None:
-    for _ in range(90):
+    checks = (
+        ("GET", f"{GATEWAY}/health", None),
+        ("GET", f"{STORE}/products", None),
+        ("GET", f"{AGENT}/attestation", None),
+        ("POST", f"{DAE}/intent", {"budget": 25, "domain": "mockstore.local"}),
+    )
+    last_error = "unknown"
+    for _ in range(120):
         try:
             async with httpx.AsyncClient(timeout=2) as client:
-                health = await client.get(f"{GATEWAY}/health")
-                store = await client.get(f"{STORE}/products")
-                if health.status_code == 200 and store.status_code == 200:
-                    return
-        except Exception:
-            pass
+                for method, url, body in checks:
+                    if method == "GET":
+                        response = await client.get(url)
+                    else:
+                        response = await client.post(url, json=body)
+                    if response.status_code >= 500:
+                        last_error = f"{url} returned {response.status_code}"
+                        raise RuntimeError(last_error)
+            return
+        except Exception as exc:
+            last_error = str(exc)
+            if _process and _process.poll() is not None:
+                raise RuntimeError(f"Backend subprocess exited early: {_process.returncode}") from exc
         await asyncio.sleep(0.5)
-    raise RuntimeError("Backend services failed to start")
+    raise RuntimeError(f"Backend services failed to start: {last_error}")
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     global _process
-    _process = subprocess.Popen([sys.executable, "run.py"], cwd=ROOT)
+    env = os.environ.copy()
+    env.setdefault("IISTA_DISABLE_PLAYWRIGHT", "1")
+    env["PYTHONPATH"] = ROOT
+    _process = subprocess.Popen(
+        [sys.executable, "run.py"],
+        cwd=ROOT,
+        env=env,
+    )
     await _wait_for_services()
     yield
     if _process and _process.poll() is None:
         _process.send_signal(signal.SIGTERM)
-        _process.wait(timeout=15)
+        try:
+            _process.wait(timeout=15)
+        except subprocess.TimeoutExpired:
+            _process.kill()
+            _process.wait(timeout=5)
 
 
 app = FastAPI(title="Sworn Backend Proxy", lifespan=lifespan)

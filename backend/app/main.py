@@ -27,6 +27,7 @@ class NaturalRun(BaseModel):
     user_prompt: str
     mode: str = "autonomous"
     demo_event: str | None = None
+    session_id: str | None = None
 
 
 RUNS: dict[str, dict] = {}
@@ -107,6 +108,7 @@ async def create_run(body: NaturalRun):
     RUNS[run_id] = {
         "run_id": run_id, "status": "pending", "events": events,
         "policy": policy, "ssi": ssi, "demo_event": body.demo_event,
+        "session_id": body.session_id,
         "execution_started": False,
     }
 
@@ -157,7 +159,7 @@ async def _execute_run(run_id: str):
     item = RUNS[run_id]
     if item.get("status") == "cancelled":
         return
-    async with httpx.AsyncClient(timeout=60) as c:
+    async with httpx.AsyncClient(timeout=120) as c:
         try:
             r = await c.post(f"{AGENT_URL}/run", json={
                 "scenario": "standard",
@@ -165,6 +167,7 @@ async def _execute_run(run_id: str):
                 "domain": "mockstore.local",
                 "user_prompt": item["events"][0]["payload"]["prompt"],
                 "run_id": run_id,
+                "session_id": item.get("session_id"),
             })
             result = r.json()
             item["result"] = result

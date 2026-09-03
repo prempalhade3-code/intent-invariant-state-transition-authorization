@@ -158,7 +158,10 @@ export function isChapterConfirmed(
     case "handoff":
       return isChapterConfirmed("proposed", view, store, phase);
     case "verify":
-      return view.verification != null || view.authorized != null;
+      return (
+        hasEvent(view, "verification_result") ||
+        hasEvent(view, "authorization_blocked")
+      );
     case "authorize":
       return view.authorized === true;
     case "pay":
@@ -235,9 +238,32 @@ export function transactionAmount(view: ViewModel, store: StoreSnapshot): number
   return typeof v === "number" ? v : null;
 }
 
+export function technicalBlockReason(reason: string | null): string {
+  if (!reason) return "dae commit rejected policy mismatch";
+  const t = reason.toLowerCase();
+  if (t.includes("connection attempts failed") || t.includes("agent unavailable")) {
+    return "agent executor unreachable backend services offline";
+  }
+  if (t.includes("run abandoned")) return "dae commit rejected run abandoned before payment";
+  if (t.includes("budget") || t.includes("invoice violates")) {
+    return "dae commit rejected invoice exceeds sealed budget";
+  }
+  if (t.includes("oracle") || t.includes("stale")) return "dae commit rejected oracle stale price";
+  if (t.includes("hash") || t.includes("predecessor")) return "dae commit rejected graph hash mismatch";
+  if (t.includes("merchant") || t.includes("witness")) return "dae commit rejected merchant witness invalid";
+  if (t.includes("ssi rejected") || t.includes("execution path")) {
+    return "dae commit rejected policy path mismatch";
+  }
+  return reason.length > 72 ? `${reason.slice(0, 69)}...` : reason;
+}
+
 export function humanBlockReason(reason: string | null): string {
   if (!reason) return "This transaction was not allowed.";
   const t = reason.toLowerCase();
+  if (t.includes("connection attempts failed") || t.includes("agent unavailable")) {
+    return "The agent could not reach the backend services.";
+  }
+  if (t.includes("run abandoned")) return "The run was cancelled before payment could complete.";
   if (t.includes("budget") || t.includes("invoice violates")) {
     return "The purchase amount exceeds what you authorized.";
   }
@@ -664,7 +690,7 @@ export function getWindowBeat(
           human: view.authorized === false ? "Payment rejected" : "Checks completed",
           technical:
             view.authorized === false
-              ? "dae commit rejected policy mismatch"
+              ? technicalBlockReason(view.blockReason)
               : "hash chain oracle witness verified",
         },
       };

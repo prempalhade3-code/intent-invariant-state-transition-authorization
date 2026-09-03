@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  cancelRun,
   createRun,
   fetchCart,
   fetchCheckoutByRun,
@@ -38,8 +37,6 @@ export function useLiveRun(initialRunId?: string) {
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const phaseRef = useRef<Phase>("idle");
   const settledRef = useRef(false);
-  const cancelTimerRef = useRef<number | null>(null);
-
   useEffect(() => {
     phaseRef.current = phase;
     if (phase === "settled") settledRef.current = true;
@@ -174,23 +171,6 @@ export function useLiveRun(initialRunId?: string) {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialRunId]);
-
-  useEffect(() => {
-    if (cancelTimerRef.current) {
-      window.clearTimeout(cancelTimerRef.current);
-      cancelTimerRef.current = null;
-    }
-
-    return () => {
-      const id = runId.current;
-      if (!id || settledRef.current) return;
-      cancelTimerRef.current = window.setTimeout(() => {
-        if (runId.current === id && !settledRef.current) {
-          void cancelRun(id).catch(() => {});
-        }
-      }, 400);
-    };
   }, [initialRunId]);
 
   const startAutonomous = useCallback(

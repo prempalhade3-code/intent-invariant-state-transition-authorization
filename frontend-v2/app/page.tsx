@@ -15,7 +15,7 @@ import { BentoLab } from "@/components/landing/BentoLab";
 import { LandingFAQ } from "@/components/landing/LandingFAQ";
 import { LandingWordmark } from "@/components/landing/LandingWordmark";
 import { HeroSealFeed } from "@/components/landing/HeroSealFeed";
-import { createRun } from "@/lib/api";
+import { createRun, startRun } from "@/lib/api";
 import { TRY_IT_EVENT } from "@/lib/tryIt";
 import type { Phase } from "@/lib/types";
 
@@ -86,6 +86,7 @@ export default function LandingPage() {
     setPhase("submitting");
     try {
       const res = await createRun(prompt);
+      await startRun(res.run_id);
       router.push(`/run/${res.run_id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not start run");

@@ -6,6 +6,7 @@ import type { Phase, StoreSnapshot } from "@/lib/types";
 import {
   CHAPTER_SEQUENCE,
   computeTargetIndex,
+  isChapterConfirmed,
   type ChapterId,
 } from "@/lib/narrative";
 
@@ -52,15 +53,23 @@ export function usePacedNarrative(
 
         const elapsed = Date.now() - enteredAt.current;
         if (elapsed >= chapter.minDwell) {
-          enteredAt.current = Date.now();
-          return current + 1;
+          const next = current + 1;
+          const nextChapter = CHAPTER_SEQUENCE[next];
+          if (
+            nextChapter &&
+            next <= targetIndex &&
+            isChapterConfirmed(nextChapter.id, view, store, phase)
+          ) {
+            enteredAt.current = Date.now();
+            return next;
+          }
         }
         return current;
       });
     }, 80);
 
     return () => window.clearInterval(tick);
-  }, [targetIndex]);
+  }, [targetIndex, view, store, phase]);
 
   // After blocked verify, jump to blocked virtual state handled by displayIndex cap
   const effectiveIndex = blocked && displayIndex >= CHAPTER_SEQUENCE.findIndex((c) => c.id === "verify")

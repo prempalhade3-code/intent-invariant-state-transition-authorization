@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { SessionBootstrap } from "@/components/SessionBootstrap";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
       <body className="font-sans bg-paper text-ink antialiased flex flex-col min-h-screen selection:bg-ink/10 selection:text-ink">
+        <SessionBootstrap />
         {children}
       </body>
     </html>
