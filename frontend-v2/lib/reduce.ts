@@ -448,8 +448,9 @@ export function reduceEvents(
 
       case "verification_result":
         view.verification = p;
-        if (p.authorized === true) view.authorized = true;
-        if (typeof p.detail === "string") {
+        if (p.authorized === true) {
+          view.authorized = true;
+        } else if (typeof p.detail === "string") {
           view.authorized = false;
           view.blockReason = p.detail;
         }

@@ -201,17 +201,6 @@ async def run(body: Run):
 
         if state["authorized"]:
             await emit(body.run_id, "authorization_granted", {"status": "authorized"}, "dae")
-            if body.run_id:
-                try:
-                    async with httpx.AsyncClient(timeout=2) as c:
-                        run = await c.get(f"{GATEWAY_URL}/api/runs/{body.run_id}")
-                        if run.status_code == 200 and run.json().get("status") == "cancelled":
-                            await emit(body.run_id, "authorization_blocked", {"reason": "run abandoned"}, "gateway")
-                            state["authorized"] = False
-                            await emit(body.run_id, "run_finished", {"authorized": False, "reason": "run abandoned"})
-                            return {"authorized": False, "scenario": "natural", "reason": "run abandoned", "graph": state["graph"].serialise()}
-                except Exception:
-                    pass
             a = state["authorization"]
             async with httpx.AsyncClient(timeout=5) as c:
                 payment = await c.post(f"{STORE_URL}/payment", json={k: a[k] for k in ("transaction", "signature", "transaction_public_key", "dae_attestation_signature")})

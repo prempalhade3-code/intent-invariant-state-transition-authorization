@@ -62,6 +62,7 @@ run_checkouts: dict[str, str] = {}  # run_id -> checkout_id
 
 active_run_id: str | None = None
 SESSION_COOKIE = "sworn_session"
+SESSION_DAY_COOKIE = "sworn_session_day"
 IST = ZoneInfo("Asia/Kolkata")
 
 
@@ -81,15 +82,49 @@ def _order_day(created_at: str | None) -> str | None:
         return None
 
 
-def _resolve_session(session_id: str | None, cookie: str | None) -> str | None:
-    return session_id or cookie
+def _resolve_session(session_id: str | None, cookie: str | None, cookie_day: str | None = None) -> str | None:
+    if session_id:
+        return session_id
+    if not cookie:
+        return None
+    today = _today_ist()
+    if cookie_day and cookie_day != today:
+        return None
+    return cookie
 
 
-def _orders_for_view(session_id: str | None, cookie: str | None, run_id: str | None = None) -> list[dict[str, Any]]:
+def _purge_stale_orders() -> None:
+    """Drop in-memory orders from previous calendar days (IST)."""
+    today = _today_ist()
+    stale = [
+        oid for oid, order in orders.items()
+        if _order_day(order.get("created_at")) != today
+    ]
+    for oid in stale:
+        orders.pop(oid, None)
+    stale_pending = [
+        rid for rid, order in pending_orders.items()
+        if _order_day(order.get("created_at")) != today
+    ]
+    for rid in stale_pending:
+        pending_orders.pop(rid, None)
+
+
+def _orders_for_view(
+    session_id: str | None,
+    cookie: str | None,
+    run_id: str | None = None,
+    cookie_day: str | None = None,
+) -> list[dict[str, Any]]:
+    _purge_stale_orders()
     items = _all_orders()
     if run_id:
-        return [o for o in items if o.get("run_id") == run_id]
-    session = _resolve_session(session_id, cookie)
+        today = _today_ist()
+        return [
+            o for o in items
+            if o.get("run_id") == run_id and _order_day(o.get("created_at")) == today
+        ]
+    session = _resolve_session(session_id, cookie, cookie_day)
     if not session:
         return []
     today = _today_ist()
@@ -283,8 +318,9 @@ def orders_api(
     run_id: str | None = None,
     session_id: str | None = None,
     sworn_session: str | None = Cookie(None),
+    sworn_session_day: str | None = Cookie(None),
 ):
-    items = _orders_for_view(session_id, sworn_session, run_id)
+    items = _orders_for_view(session_id, sworn_session, run_id, sworn_session_day)
     items.sort(key=lambda o: o.get("created_at") or "", reverse=True)
     return {"orders": items}
 
@@ -465,12 +501,18 @@ def checkout_page(run: str | None = Query(None)):
 def orders_page(
     session: str | None = Query(None),
     sworn_session: str | None = Cookie(None),
+    sworn_session_day: str | None = Cookie(None),
 ):
     sid = session or sworn_session
-    html = store_ui.render_orders(_orders_for_view(sid, sid), PRODUCTS, _today_ist())
+    html = store_ui.render_orders(
+        _orders_for_view(session, sworn_session, cookie_day=sworn_session_day),
+        PRODUCTS,
+        _today_ist(),
+    )
     if session and session != sworn_session:
         response = HTMLResponse(html)
         response.set_cookie(SESSION_COOKIE, session, path="/", samesite="lax")
+        response.set_cookie(SESSION_DAY_COOKIE, _today_ist(), path="/", samesite="lax")
         return response
     return HTMLResponse(html)
 
