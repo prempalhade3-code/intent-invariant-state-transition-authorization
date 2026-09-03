@@ -1,24 +1,29 @@
-"""Production entrypoint: internal services + public reverse proxy on $PORT."""
+"""Production entrypoint: all IISTA services in one process + public reverse proxy."""
 from __future__ import annotations
 
 import asyncio
 import os
-import signal
-import subprocess
 import sys
 from contextlib import asynccontextmanager
 
 import httpx
+import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
+from bootstrap_env import provision
+
 GATEWAY = "http://127.0.0.1:8003"
 STORE = "http://127.0.0.1:8000"
 AGENT = "http://127.0.0.1:8001"
 DAE = "http://127.0.0.1:8002"
 
-_process: subprocess.Popen | None = None
+_servers: list[uvicorn.Server] = []
+_tasks: list[asyncio.Task] = []
 
 HOP_BY_HOP = {
     "connection",
@@ -33,55 +38,77 @@ HOP_BY_HOP = {
     "content-length",
 }
 
+SERVICE_APPS = (
+    ("app.mock_store:app", 8000),
+    ("app.agent:app", 8001),
+    ("app.dae:app", 8002),
+    ("app.main:app", 8003),
+)
+
+
+async def _run_service(app_path: str, port: int) -> None:
+    config = uvicorn.Config(
+        app_path,
+        host="127.0.0.1",
+        port=port,
+        log_level="warning",
+        access_log=False,
+    )
+    server = uvicorn.Server(config)
+    _servers.append(server)
+    await server.serve()
+
 
 async def _wait_for_services() -> None:
     checks = (
         ("GET", f"{GATEWAY}/health", None),
         ("GET", f"{STORE}/products", None),
-        ("GET", f"{AGENT}/attestation", None),
+        ("GET", f"{AGENT}/health", None),
         ("POST", f"{DAE}/intent", {"budget": 25, "domain": "mockstore.local"}),
     )
     last_error = "unknown"
     for _ in range(120):
         try:
-            async with httpx.AsyncClient(timeout=2) as client:
+            async with httpx.AsyncClient(timeout=3) as client:
                 for method, url, body in checks:
-                    if method == "GET":
-                        response = await client.get(url)
-                    else:
-                        response = await client.post(url, json=body)
+                    response = (
+                        await client.get(url)
+                        if method == "GET"
+                        else await client.post(url, json=body)
+                    )
                     if response.status_code >= 500:
-                        last_error = f"{url} returned {response.status_code}"
-                        raise RuntimeError(last_error)
+                        raise RuntimeError(f"{url} returned {response.status_code}")
             return
         except Exception as exc:
             last_error = str(exc)
-            if _process and _process.poll() is not None:
-                raise RuntimeError(f"Backend subprocess exited early: {_process.returncode}") from exc
         await asyncio.sleep(0.5)
     raise RuntimeError(f"Backend services failed to start: {last_error}")
 
 
+async def _start_services() -> None:
+    provision(force=True)
+    os.environ.setdefault("IISTA_DISABLE_PLAYWRIGHT", "1")
+    for app_path, port in SERVICE_APPS:
+        task = asyncio.create_task(_run_service(app_path, port), name=f"iista-{port}")
+        _tasks.append(task)
+        await asyncio.sleep(0.4)
+    await _wait_for_services()
+
+
+async def _stop_services() -> None:
+    for server in _servers:
+        server.should_exit = True
+    if _tasks:
+        await asyncio.gather(*_tasks, return_exceptions=True)
+    _tasks.clear()
+    _servers.clear()
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    global _process
-    env = os.environ.copy()
-    env.setdefault("IISTA_DISABLE_PLAYWRIGHT", "1")
-    env["PYTHONPATH"] = ROOT
-    _process = subprocess.Popen(
-        [sys.executable, "run.py"],
-        cwd=ROOT,
-        env=env,
-    )
-    await _wait_for_services()
+    await _start_services()
     yield
-    if _process and _process.poll() is None:
-        _process.send_signal(signal.SIGTERM)
-        try:
-            _process.wait(timeout=15)
-        except subprocess.TimeoutExpired:
-            _process.kill()
-            _process.wait(timeout=5)
+    await _stop_services()
 
 
 app = FastAPI(title="Sworn Backend Proxy", lifespan=lifespan)
