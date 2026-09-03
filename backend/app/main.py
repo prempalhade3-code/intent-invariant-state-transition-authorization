@@ -11,7 +11,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 app = FastAPI(title="IISTA API Gateway")
-BUILD_ID = "20260903-pending-until-finalize"
+BUILD_ID = "20260903-orders-day-notice"
 AGENT_URL = os.environ.get("IISTA_AGENT_URL", "http://127.0.0.1:8001")
 DAE_URL = os.environ.get("IISTA_DAE_URL", "http://127.0.0.1:8002")
 STORE_URL = os.environ.get("IISTA_STORE_URL", "http://127.0.0.1:8000")

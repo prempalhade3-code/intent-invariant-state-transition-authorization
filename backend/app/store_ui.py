@@ -258,6 +258,13 @@ nav a.active { color: var(--ink-strong); border-bottom-color: var(--line-strong)
 }
 .invoice-note p { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.55; }
 
+.orders-notice {
+  margin-top: 16px; padding: 14px 18px;
+  background: var(--surface); border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  font-size: 13px; color: var(--muted); line-height: 1.55; max-width: 56ch;
+}
+
 .order-list { display: flex; flex-direction: column; gap: 14px; width: 100%; }
 .order-card { text-decoration: none; color: inherit; }
 .order-card .row { border: none; padding: 0; align-items: center; }
@@ -508,8 +515,19 @@ def render_invoice(invoice: dict[str, Any], product: dict[str, Any] | None, paid
 
 
 def render_orders(orders_list: list[dict[str, Any]], products: list[dict[str, Any]], today: str = "") -> str:
+    day_notice = (
+        "Orders shown here are from today only (IST). "
+        "When the day ends, this list clears — start a new session tomorrow to place fresh orders."
+    )
+    notice_html = f'<p class="orders-notice">{escape(day_notice)}</p>'
+
     if not orders_list:
-        body = """<div class="empty"><h2>No orders yet</h2><p>Completed purchases from today will appear here after Sworn authorizes payment.</p></div>"""
+        body = f"""<div class="page-hero">
+      <h1>Orders</h1>
+      <p class="subtitle">No orders yet · today{f' · {escape(today)}' if today else ''}</p>
+      {notice_html}
+    </div>
+    <div class="empty"><h2>No orders yet</h2><p>Completed purchases from today will appear here after Sworn authorizes payment.</p></div>"""
         return _layout("Orders", body, "orders", 0)
 
     sorted_orders = sorted(
@@ -539,6 +557,7 @@ def render_orders(orders_list: list[dict[str, Any]], products: list[dict[str, An
     <div class="page-hero">
       <h1>Orders</h1>
       <p class="subtitle">{count_label} · {day_label}</p>
+      {notice_html}
     </div>
     <div class="order-list">{rows}</div>"""
     return _layout("Orders", body, "orders", 0)
