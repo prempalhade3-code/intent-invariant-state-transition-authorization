@@ -740,8 +740,10 @@ export function buildWindowLog(
   displayIndex: number,
   view: ViewModel,
   store: StoreSnapshot,
+  phase: Phase,
 ): WindowLogEntry[] {
-  return CHAPTER_SEQUENCE.slice(0, displayIndex)
+  return CHAPTER_SEQUENCE.slice(0, displayIndex + 1)
+    .filter((ch) => isChapterConfirmed(ch.id, view, store, phase))
     .map((ch) => {
       const beat = getWindowBeat(ch.id, view, store);
       if (!beat.log) return null;

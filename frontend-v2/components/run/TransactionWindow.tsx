@@ -7,7 +7,7 @@ import type { ChapterId } from "@/lib/narrative";
 import { buildWindowLog, chapterIndex, getWindowBeat } from "@/lib/narrative";
 import { storeDisplay, storeMarketplaceHref } from "@/lib/runReport";
 import type { ViewModel } from "@/lib/reduce";
-import type { StoreSnapshot } from "@/lib/types";
+import type { Phase, StoreSnapshot } from "@/lib/types";
 
 /** Coarena Agent A + B combined footprint (+1in each side, +1in bottom) */
 export const TERMINAL_W = 1376;
@@ -18,6 +18,7 @@ interface TransactionWindowProps {
   store: StoreSnapshot;
   activeChapter: ChapterId;
   displayIndex: number;
+  phase: Phase;
   live?: boolean;
 }
 
@@ -47,12 +48,13 @@ export function TransactionWindow({
   store,
   activeChapter,
   displayIndex,
+  phase,
   live,
 }: TransactionWindowProps) {
   const beat = getWindowBeat(activeChapter, view, store);
   const log = useMemo(
-    () => buildWindowLog(displayIndex, view, store),
-    [displayIndex, view, store],
+    () => buildWindowLog(displayIndex, view, store, phase),
+    [displayIndex, view, store, phase],
   );
   const scrollRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);

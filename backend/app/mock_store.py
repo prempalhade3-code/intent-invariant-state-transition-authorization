@@ -7,6 +7,7 @@ from starlette.responses import Response
 from pydantic import BaseModel
 from typing import Any
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from uuid import uuid4
 import os
 from cryptography.hazmat.primitives import serialization
@@ -61,6 +62,23 @@ run_checkouts: dict[str, str] = {}  # run_id -> checkout_id
 
 active_run_id: str | None = None
 SESSION_COOKIE = "sworn_session"
+IST = ZoneInfo("Asia/Kolkata")
+
+
+def _today_ist() -> str:
+    return datetime.now(IST).date().isoformat()
+
+
+def _order_day(created_at: str | None) -> str | None:
+    if not created_at:
+        return None
+    try:
+        dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(IST).date().isoformat()
+    except Exception:
+        return None
 
 
 def _resolve_session(session_id: str | None, cookie: str | None) -> str | None:
@@ -74,7 +92,11 @@ def _orders_for_view(session_id: str | None, cookie: str | None, run_id: str | N
     session = _resolve_session(session_id, cookie)
     if not session:
         return []
-    return [o for o in items if o.get("session_id") == session]
+    today = _today_ist()
+    return [
+        o for o in items
+        if o.get("session_id") == session and _order_day(o.get("created_at")) == today
+    ]
 
 
 def _resolve_run(run: str | None) -> str | None:
@@ -274,7 +296,9 @@ def order_api(order_id: str, sworn_session: str | None = Cookie(None), session_i
         raise HTTPException(404, "unknown order")
     session = _resolve_session(session_id, sworn_session)
     order_session = order.get("session_id")
-    if order_session and session != order_session:
+    if not order_session or not session or session != order_session:
+        raise HTTPException(404, "unknown order")
+    if _order_day(order.get("created_at")) != _today_ist():
         raise HTTPException(404, "unknown order")
     inv = invoices.get(order.get("invoice_id", ""))
     return {"order": order, "invoice": inv}
@@ -438,8 +462,17 @@ def checkout_page(run: str | None = Query(None)):
 
 
 @app.get("/orders", response_class=HTMLResponse)
-def orders_page(sworn_session: str | None = Cookie(None)):
-    return store_ui.render_orders(_orders_for_view(None, sworn_session), PRODUCTS)
+def orders_page(
+    session: str | None = Query(None),
+    sworn_session: str | None = Cookie(None),
+):
+    sid = session or sworn_session
+    html = store_ui.render_orders(_orders_for_view(sid, sid), PRODUCTS, _today_ist())
+    if session and session != sworn_session:
+        response = HTMLResponse(html)
+        response.set_cookie(SESSION_COOKIE, session, path="/", samesite="lax")
+        return response
+    return HTMLResponse(html)
 
 
 @app.get("/order/{order_id}", response_class=HTMLResponse)
@@ -449,7 +482,9 @@ def order_page(order_id: str, sworn_session: str | None = Cookie(None)):
         raise HTTPException(404, "unknown order")
     session = sworn_session
     order_session = order.get("session_id")
-    if order_session and session != order_session:
+    if not order_session or not session or session != order_session:
+        raise HTTPException(404, "unknown order")
+    if _order_day(order.get("created_at")) != _today_ist():
         raise HTTPException(404, "unknown order")
     prod = next((p for p in PRODUCTS if p["id"] == order["product_id"]), None)
     inv = invoices.get(order.get("invoice_id", ""))

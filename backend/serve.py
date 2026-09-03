@@ -1,13 +1,11 @@
-"""Production entrypoint: all IISTA services in one process + public reverse proxy."""
+"""Production entrypoint: one process, in-process services, public proxy on $PORT."""
 from __future__ import annotations
 
-import asyncio
 import os
 import sys
 from contextlib import asynccontextmanager
 
 import httpx
-import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
 
@@ -19,11 +17,6 @@ from bootstrap_env import provision
 
 GATEWAY = "http://127.0.0.1:8003"
 STORE = "http://127.0.0.1:8000"
-AGENT = "http://127.0.0.1:8001"
-DAE = "http://127.0.0.1:8002"
-
-_servers: list[uvicorn.Server] = []
-_tasks: list[asyncio.Task] = []
 
 HOP_BY_HOP = {
     "connection",
@@ -38,38 +31,18 @@ HOP_BY_HOP = {
     "content-length",
 }
 
-SERVICE_APPS = (
-    ("app.mock_store:app", 8000),
-    ("app.agent:app", 8001),
-    ("app.dae:app", 8002),
-    ("app.main:app", 8003),
-)
-
-
-async def _run_service(app_path: str, port: int) -> None:
-    config = uvicorn.Config(
-        app_path,
-        host="127.0.0.1",
-        port=port,
-        log_level="warning",
-        access_log=False,
-    )
-    server = uvicorn.Server(config)
-    _servers.append(server)
-    await server.serve()
-
 
 async def _wait_for_services() -> None:
     checks = (
         ("GET", f"{GATEWAY}/health", None),
         ("GET", f"{STORE}/products", None),
-        ("GET", f"{AGENT}/health", None),
-        ("POST", f"{DAE}/intent", {"budget": 25, "domain": "mockstore.local"}),
+        ("GET", "http://127.0.0.1:8001/health", None),
+        ("POST", "http://127.0.0.1:8002/intent", {"budget": 25, "domain": "mockstore.local"}),
     )
     last_error = "unknown"
-    for _ in range(120):
+    for _ in range(60):
         try:
-            async with httpx.AsyncClient(timeout=3) as client:
+            async with httpx.AsyncClient(timeout=5) as client:
                 for method, url, body in checks:
                     response = (
                         await client.get(url)
@@ -77,38 +50,33 @@ async def _wait_for_services() -> None:
                         else await client.post(url, json=body)
                     )
                     if response.status_code >= 500:
-                        raise RuntimeError(f"{url} returned {response.status_code}")
+                        raise RuntimeError(f"{url} -> {response.status_code}")
             return
         except Exception as exc:
             last_error = str(exc)
+        import asyncio
         await asyncio.sleep(0.5)
     raise RuntimeError(f"Backend services failed to start: {last_error}")
 
 
-async def _start_services() -> None:
-    provision(force=True)
-    os.environ.setdefault("IISTA_DISABLE_PLAYWRIGHT", "1")
-    for app_path, port in SERVICE_APPS:
-        task = asyncio.create_task(_run_service(app_path, port), name=f"iista-{port}")
-        _tasks.append(task)
-        await asyncio.sleep(0.4)
-    await _wait_for_services()
-
-
-async def _stop_services() -> None:
-    for server in _servers:
-        server.should_exit = True
-    if _tasks:
-        await asyncio.gather(*_tasks, return_exceptions=True)
-    _tasks.clear()
-    _servers.clear()
-
-
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    await _start_services()
+    provision(force=True)
+    os.environ["IISTA_DISABLE_PLAYWRIGHT"] = "1"
+
+    from app.internal_http import install, register_internal_service
+
+    install()
+
+    from app import agent, dae, main as gateway, mock_store
+
+    register_internal_service("http://127.0.0.1:8000", mock_store.app)
+    register_internal_service("http://127.0.0.1:8001", agent.app)
+    register_internal_service("http://127.0.0.1:8002", dae.app)
+    register_internal_service("http://127.0.0.1:8003", gateway.app)
+
+    await _wait_for_services()
     yield
-    await _stop_services()
 
 
 app = FastAPI(title="Sworn Backend Proxy", lifespan=lifespan)
@@ -152,7 +120,16 @@ def _is_gateway_path(path: str) -> bool:
     return path.startswith("/api/runs")
 
 
+@app.get("/health")
+async def health():
+    async with httpx.AsyncClient(timeout=5) as client:
+        response = await client.get(f"{GATEWAY}/health")
+    return Response(content=response.content, status_code=response.status_code, media_type="application/json")
+
+
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"])
 async def proxy(path: str, request: Request) -> Response:
+    if request.url.path == "/health":
+        return await health()
     upstream = GATEWAY if _is_gateway_path(request.url.path) else STORE
     return await _forward(request, upstream)

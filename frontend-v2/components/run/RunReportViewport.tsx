@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { buildRunReport, storeDisplay, type ReportBlock } from "@/lib/runReport";
+import { storeOrdersHref } from "@/lib/session";
 import { productLabel, transactionAmount } from "@/lib/narrative";
 import type { ViewModel } from "@/lib/reduce";
 import type { StoreSnapshot } from "@/lib/types";
@@ -219,7 +220,7 @@ function TransactionCard({
           <p>
             <span className="text-white/30">store</span> ={" "}
             <a
-              href="/store/orders"
+              href={storeOrdersHref()}
               target="_blank"
               rel="noopener noreferrer"
               className={storeLinkClassName}

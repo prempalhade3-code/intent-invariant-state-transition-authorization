@@ -507,9 +507,9 @@ def render_invoice(invoice: dict[str, Any], product: dict[str, Any] | None, paid
     return _layout("Invoice", body, "orders", 0, invoice.get("run_id", ""))
 
 
-def render_orders(orders_list: list[dict[str, Any]], products: list[dict[str, Any]]) -> str:
+def render_orders(orders_list: list[dict[str, Any]], products: list[dict[str, Any]], today: str = "") -> str:
     if not orders_list:
-        body = """<div class="empty"><h2>No orders yet</h2><p>Completed purchases will appear here after Sworn authorizes payment.</p></div>"""
+        body = """<div class="empty"><h2>No orders yet</h2><p>Completed purchases from today will appear here after Sworn authorizes payment.</p></div>"""
         return _layout("Orders", body, "orders", 0)
 
     sorted_orders = sorted(
@@ -534,10 +534,11 @@ def render_orders(orders_list: list[dict[str, Any]], products: list[dict[str, An
         </a>"""
 
     count_label = f"{len(sorted_orders)} order{'s' if len(sorted_orders) != 1 else ''}"
+    day_label = f"today · {today}" if today else "today"
     body = f"""
     <div class="page-hero">
       <h1>Orders</h1>
-      <p class="subtitle">{count_label} · all runs</p>
+      <p class="subtitle">{count_label} · {day_label}</p>
     </div>
     <div class="order-list">{rows}</div>"""
     return _layout("Orders", body, "orders", 0)

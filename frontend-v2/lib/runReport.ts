@@ -1,4 +1,5 @@
 import type { ViewModel } from "./reduce";
+import { storeOrdersHref } from "./session";
 import type { StoreSnapshot } from "./types";
 import {
   CHAPTER_SEQUENCE,
@@ -38,7 +39,7 @@ export function storeDisplay(view: ViewModel, store: StoreSnapshot): string {
 }
 
 export function storeBrowseHref(): string {
-  return "/store/orders";
+  return storeOrdersHref();
 }
 
 export function storeMarketplaceHref(): string {

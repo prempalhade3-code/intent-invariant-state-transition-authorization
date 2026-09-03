@@ -37,6 +37,7 @@ export function LiveConsole({
           store={store}
           activeChapter={activeChapter}
           displayIndex={displayIndex}
+          phase={phase}
           live={live}
         />
       </div>
