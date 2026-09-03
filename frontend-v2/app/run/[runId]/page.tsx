@@ -31,7 +31,8 @@ export default function RunPage({ params }: PageProps) {
       finalizedRef.current ||
       phase !== "settled" ||
       view.authorized !== true ||
-      !view.payment
+      !view.payment ||
+      !isComplete
     ) {
       return;
     }
@@ -41,7 +42,7 @@ export default function RunPage({ params }: PageProps) {
       .catch(() => {
         finalizedRef.current = false;
       });
-  }, [phase, runId, view.authorized, view.payment, pollStore]);
+  }, [phase, runId, view.authorized, view.payment, pollStore, isComplete]);
 
   const showReport =
     view.authorized === true &&

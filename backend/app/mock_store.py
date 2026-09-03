@@ -155,24 +155,13 @@ def _invoice_for_run(run_id: str | None) -> dict[str, Any] | None:
 
 
 def _lookup_order(order_id: str) -> dict[str, Any] | None:
-    if order_id in orders:
-        return orders[order_id]
-    for pending in pending_orders.values():
-        if pending.get("order_id") == order_id:
-            return pending
-    return None
+    """Only finalized orders are visible to clients."""
+    return orders.get(order_id)
 
 
 def _all_orders() -> list[dict[str, Any]]:
-    seen: set[str] = set()
-    items: list[dict[str, Any]] = []
-    for order in orders.values():
-        seen.add(order["order_id"])
-        items.append(order)
-    for order in pending_orders.values():
-        if order["order_id"] not in seen:
-            items.append(order)
-    return items
+    """List finalized orders only — pending stays hidden until /finalize."""
+    return list(orders.values())
 
 
 class Checkout(BaseModel):
@@ -404,13 +393,14 @@ def payment(body: Payment):
             "fulfillment": "provisioning",
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
-        orders[order_id] = order
         if run_id:
-            pending_orders.pop(run_id, None)
+            pending_orders[run_id] = order
             carts.pop(run_id, None)
-        for p in PRODUCTS:
-            if p["id"] == inv["product_id"] and p["inventory"] > 0:
-                p["inventory"] -= 1
+        else:
+            orders[order_id] = order
+            for p in PRODUCTS:
+                if p["id"] == inv["product_id"] and p["inventory"] > 0:
+                    p["inventory"] -= 1
         result["order_id"] = order_id
         result["invoice_id"] = inv_id
         result["run_id"] = run_id
